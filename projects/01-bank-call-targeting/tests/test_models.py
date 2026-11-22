@@ -33,7 +33,7 @@ def make_clients(n: int, seed: int) -> pd.DataFrame:
 SMALL_CONFIG = {
     "seed": 1,
     "features": {"groups": ["client", "contact", "history"]},
-    "evaluation": {"top_k": 5},
+    "evaluation": {"top_fraction": 0.10},
     "models": {
         "logistic_regression": {"max_iter": 200},
         "random_forest": {"n_estimators": 10, "min_samples_leaf": 2},
