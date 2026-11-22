@@ -43,7 +43,7 @@ def small_config():
     return {
         "seed": 1,
         "models": {"logistic_regression": {"max_iter": 500}},
-        "evaluation": {"top_k": 60, "bootstrap_draws": 30},
+        "evaluation": {"top_fraction": 0.10, "bootstrap_draws": 30},
         "ablations": [
             {"name": "baseline", "groups": ["client", "contact", "history"], "extra_columns": []},
             {"name": "plus_duration", "groups": ["client", "contact", "history"], "extra_columns": ["duration"]},
