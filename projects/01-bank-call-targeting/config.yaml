@@ -24,3 +24,4 @@ models:
 
 evaluation:
   top_k: 500   # ASSUMPTION: the call team can phone 500 clients; change when the bank says otherwise
+  bootstrap_draws: 200   # how many re-drawn exams to score when measuring the wobble
