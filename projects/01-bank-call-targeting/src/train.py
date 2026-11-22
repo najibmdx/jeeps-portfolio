@@ -40,7 +40,8 @@ def run(config: dict, sets: dict) -> dict:
     """Score every model and return the metrics."""
     scored = score_models(config, sets)
     y_train, y_valid = scored["y_train"], scored["y_validation"]
-    k = config["evaluation"]["top_k"]
+    fraction = config["evaluation"]["top_fraction"]
+    k = evaluate.top_k_from_fraction(len(y_valid), fraction)
     base_train, base_valid = float(y_train.mean()), float(y_valid.mean())
 
     results = {}
@@ -53,13 +54,16 @@ def run(config: dict, sets: dict) -> dict:
             "validation_pr_auc": round(valid_pr, 4),
             "validation_times_blind_guess": round(valid_pr / base_valid, 2),
             "validation_precision_at_k": round(evaluate.precision_at_k(y_valid, s["validation"], k), 4),
+            "validation_recall_at_k": round(evaluate.recall_at_k(y_valid, s["validation"], k), 4),
             "validation_lift_at_k": round(evaluate.lift_at_k(y_valid, s["validation"], k), 2),
         }
 
     return {
         "train_baseline": round(base_train, 4),
         "validation_baseline": round(base_valid, 4),
+        "top_fraction": fraction,
         "top_k": k,
+        "always_no": {name: round(v, 4) for name, v in evaluate.always_no_baseline(y_valid).items()},
         "models": results,
     }
 
@@ -69,13 +73,16 @@ def main() -> None:
     metrics = run(config, split.prepare(config))
 
     print(f"blind guess (yes-rate):  train {metrics['train_baseline']:.3f}   validation {metrics['validation_baseline']:.3f}")
-    print(f"top_k = {metrics['top_k']} calls (assumption)\n")
-    print(f"{'model':20} {'train PR-AUC':>18} {'valid PR-AUC':>18} {'precision@k':>12} {'lift@k':>7}")
+    print(f"top {metrics['top_fraction']:.0%} of validation clients = {metrics['top_k']:,} calls\n")
+    print(f"{'model':20} {'train PR-AUC':>18} {'valid PR-AUC':>18} {'precision@top':>14} {'recall@top':>11} {'lift@top':>9}")
     for name, m in metrics["models"].items():
         train_text = f"{m['train_pr_auc']:.3f} ({m['train_times_blind_guess']:.1f}x)"
         valid_text = f"{m['validation_pr_auc']:.3f} ({m['validation_times_blind_guess']:.1f}x)"
         print(f"{name:20} {train_text:>18} {valid_text:>18} "
-              f"{m['validation_precision_at_k']:12.3f} {m['validation_lift_at_k']:7.2f}")
+              f"{m['validation_precision_at_k']:14.3f} {m['validation_recall_at_k']:11.3f} {m['validation_lift_at_k']:9.2f}")
+    a = metrics["always_no"]
+    print(f"{'always_no':20} {'':>18} {a['pr_auc_blind_guess']:>18.3f} {a['precision']:14.3f} {a['recall']:11.3f} {'':>9}"
+          f"   (accuracy {a['accuracy']:.3f}, phones nobody)")
     print("(x) = times better than a blind guess on the SAME set")
 
     OUTPUT_DIR.mkdir(exist_ok=True)

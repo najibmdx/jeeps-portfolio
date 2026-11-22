@@ -72,14 +72,16 @@ def main() -> None:
     sets = split.prepare(config)
     scored = train.score_models(config, sets)
     y_valid = scored["y_validation"]
-    k = config["evaluation"]["top_k"]
+    fraction = config["evaluation"]["top_fraction"]
+    k = evaluate.top_k_from_fraction(len(y_valid), fraction)
     draws = config["evaluation"]["bootstrap_draws"]
 
     valid_scores = {name: s["validation"] for name, s in scored["scores"].items()}
     result = bootstrap(y_valid, valid_scores, k, draws, config["seed"])
 
+    lift_label = f"lift@top{fraction:.0%}"
     print(f"{result['n_draws']} re-drawn exams of {len(y_valid):,} clients. Ranges are the middle 90%.\n")
-    print(f"{'model':20} {'PR-AUC':>26} {'lift@' + str(k):>24}")
+    print(f"{'model':20} {'PR-AUC':>26} {lift_label:>24}")
     for name in valid_scores:
         p, lf = result["pr_auc"][name], result["lift_at_k"][name]
         print(f"{name:20} {p['median']:.3f} ({p['low']:.3f} to {p['high']:.3f})"

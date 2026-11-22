@@ -23,7 +23,7 @@ models:
     learning_rate: 0.05
 
 evaluation:
-  top_k: 500   # ASSUMPTION: the call team can phone 500 clients; change when the bank says otherwise
+  top_fraction: 0.10   # the brief: report precision in the top 10% of clients ranked by score
   bootstrap_draws: 200   # how many re-drawn exams to score when measuring the wobble
 
 leakage_audit:

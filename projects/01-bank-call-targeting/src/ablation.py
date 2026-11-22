@@ -17,6 +17,7 @@ Only the training and validation sets are read. The test set is not touched.
 import json
 
 import columns
+import evaluate
 import features
 import models
 import split
@@ -58,7 +59,7 @@ def run(config: dict, sets: dict) -> dict:
     y_valid = scored["y_validation"]
     setups = config["ablations"]
     reference = setups[0]["name"]
-    k = config["evaluation"]["top_k"]
+    k = evaluate.top_k_from_fraction(len(y_valid), config["evaluation"]["top_fraction"])
     draws = config["evaluation"]["bootstrap_draws"]
 
     result = {"reference": reference, "setups": {s["name"]: feature_list(s) for s in setups}, "models": {}}
