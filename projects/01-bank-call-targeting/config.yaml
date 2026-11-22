@@ -30,3 +30,25 @@ leakage_audit:
   min_rows: 50     # ASSUMPTION: a segment smaller than this is too small to judge, so it is never flagged
   flag_ratio: 3    # ASSUMPTION: flag a segment whose yes-rate is 3 times above or below the training yes-rate
   n_bins: 5        # number columns with many values are cut into this many equal-sized groups
+
+ablations:
+  # Each setup is the model trained on a different set of columns. The first one is the reference.
+  # groups: from src/columns.py. extra_columns: single columns that are normally excluded.
+  - name: baseline
+    groups: [client, contact, history]
+    extra_columns: []
+  - name: without_history
+    groups: [client, contact]
+    extra_columns: []
+  - name: plus_calendar
+    groups: [client, contact, history, calendar]
+    extra_columns: []
+  - name: plus_economy
+    groups: [client, contact, history, economy]
+    extra_columns: []
+  - name: plus_campaign
+    groups: [client, contact, history]
+    extra_columns: [campaign]
+  - name: plus_duration_LEAKAGE_DEMO   # NOT allowed in a real model: only known after the call
+    groups: [client, contact, history]
+    extra_columns: [duration]
