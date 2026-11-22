@@ -30,7 +30,7 @@ def lift_at_k(y_true, scores, k: int) -> float:
 
 def top_k_from_fraction(n_clients: int, fraction: float) -> int:
     """How many clients are in the top `fraction` of n_clients. Rounds up, never less than 1."""
-    return max(1, math.ceil(n_clients * fraction))
+    return max(1, math.ceil(round(n_clients * fraction, 9)))
 
 
 def recall_at_k(y_true, scores, k: int) -> float:

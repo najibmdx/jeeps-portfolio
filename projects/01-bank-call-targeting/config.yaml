@@ -25,6 +25,7 @@ models:
 evaluation:
   top_fraction: 0.10   # the brief: report precision in the top 10% of clients ranked by score
   bootstrap_draws: 200   # how many re-drawn exams to score when measuring the wobble
+  cutoff_share_step: 0.01   # the cut-off is searched in steps of 1% of clients
 
 leakage_audit:
   min_rows: 50     # ASSUMPTION: a segment smaller than this is too small to judge, so it is never flagged
@@ -52,3 +53,14 @@ ablations:
   - name: plus_duration_LEAKAGE_DEMO   # NOT allowed in a real model: only known after the call
     groups: [client, contact, history]
     extra_columns: [duration]
+
+scenarios:
+  # ASSUMPTIONS, not the bank's real costs. One subscription is worth 1 unit.
+  # cost_per_call is the cost of one phone call in the same units (0.09 = 9% of a subscription).
+  # 0.09 is about the validation yes-rate: the break-even point for phoning a client picked at random.
+  calls_cheap:
+    cost_per_call: 0.03
+  calls_moderate:
+    cost_per_call: 0.09
+  calls_expensive:
+    cost_per_call: 0.15
