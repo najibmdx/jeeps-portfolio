@@ -26,6 +26,12 @@ ABLATION_GROUPS = {
     "economy": ["emp_var_rate", "cons_price_idx", "cons_conf_idx", "euribor3m", "nr_employed"],
 }
 
+# Feature columns that hold words. Every other feature column holds a number.
+CATEGORICAL = [
+    "job", "marital", "education", "default", "housing", "loan",
+    "contact", "poutcome", "month", "day_of_week",
+]
+
 # Never used as features.
 EXCLUDED = {
     "duration": "Length of the call: only known after the call ends, and strongly tied to the outcome.",
