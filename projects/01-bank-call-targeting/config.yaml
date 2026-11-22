@@ -1,0 +1,10 @@
+# Settings for project 01. Change these instead of editing the code.
+
+split:
+  train_end: 200904   # last month of the training set (YYYYMM)
+  valid_end: 200905   # last month of the validation set; every later month is test
+
+features:
+  # Options: client, contact, history, calendar, economy.
+  # calendar and economy are held back for the ablation study (see src/columns.py).
+  groups: [client, contact, history]
