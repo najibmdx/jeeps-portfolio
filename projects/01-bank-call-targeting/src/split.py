@@ -4,7 +4,7 @@ The file has no date column, but the rows are in date order and the month
 name is given (eda.ipynb, section 3). We rebuild a year from the order, then
 cut at the end of a month so that no month is shared between two sets.
 
-Split chosen for project 01 (Option A):
+Split chosen for project 01 (Option A), set in config.yaml:
     train      May 2008 to Apr 2009
     validation May 2009
     test       Jun 2009 to Nov 2010
@@ -16,16 +16,14 @@ from pathlib import Path
 
 import pandas as pd
 
+from settings import load_config
+
 DB_PATH = Path(__file__).resolve().parent.parent / "data" / "bank.db"
 TABLE = "bank_marketing"
 
 MONTH_NUMBER = {m: i for i, m in enumerate(
     ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"], start=1)}
 FIRST_YEAR = 2008  # the authors state the file starts in May 2008
-
-# Last month (as YYYYMM) that belongs to each set. Everything later is test.
-TRAIN_END = 200904
-VALID_END = 200905
 
 
 def load_data(db_path: Path = DB_PATH, table: str = TABLE) -> pd.DataFrame:
@@ -50,8 +48,11 @@ def add_period(df: pd.DataFrame) -> pd.DataFrame:
     return out
 
 
-def time_split(df: pd.DataFrame, train_end: int = TRAIN_END, valid_end: int = VALID_END) -> dict:
-    """Cut at month ends. df must already have a period column."""
+def time_split(df: pd.DataFrame, train_end: int, valid_end: int) -> dict:
+    """Cut at month ends (YYYYMM). df must already have a period column.
+
+    train is up to train_end, validation is up to valid_end, test is everything later.
+    """
     return {
         "train": df[df["period"] <= train_end],
         "validation": df[(df["period"] > train_end) & (df["period"] <= valid_end)],
@@ -73,10 +74,11 @@ def baselines(splits: dict) -> pd.DataFrame:
     return pd.DataFrame(rows).set_index("set")
 
 
-def prepare() -> dict:
-    """Load, de-duplicate, date and split. Returns the three sets."""
+def prepare(config: dict | None = None) -> dict:
+    """Load, de-duplicate, date and split. The cut-off months come from config.yaml."""
+    config = config or load_config()
     df = add_period(drop_duplicates(load_data()))
-    return time_split(df)
+    return time_split(df, config["split"]["train_end"], config["split"]["valid_end"])
 
 
 def main() -> None:
