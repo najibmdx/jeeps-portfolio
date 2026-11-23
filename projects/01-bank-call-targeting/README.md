@@ -50,7 +50,7 @@ All settings (split months, feature groups, model settings, tuning grids, cost s
 
 ## Results
 
-All numbers below are generated from `outputs/*.json` and `outputs/leakage_audit.csv`. `python src/check_readme.py` checks them.
+All numbers below are generated from `outputs/*.json` and `outputs/leakage_audit.csv`. `python src/check_readme.py` checks every table row against those files, so a number under the wrong label is caught. Numbers that appear only in the summary sentences are not all checked.
 
 ### 1. Models on validation (May 2009)
 
