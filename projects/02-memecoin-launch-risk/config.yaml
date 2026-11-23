@@ -46,6 +46,31 @@ data:
     url: https://raw.githubusercontent.com/git-disl/MELT/master/data/label/label.csv
   prepared_folder: prepared   # inside data/. Holds the three piles. Never committed.
 
+features:
+  # Which groups the first scorer is allowed to see. Start strict; add groups back as tests.
+  # group2 and group3: timing confirmed from the authors' code (81 columns).
+  # Held back for later tests: group1 (calendar and SOL price: clock risk) and
+  # group4 (cluster columns: timing could not be checked).
+  groups: [group2, group3]
+
+models:
+  # First guesses, NOT tuned. Tuning comes in a later stage.
+  logistic_regression:
+    max_iter: 2000
+  random_forest:
+    n_estimators: 300
+    min_samples_leaf: 20
+    n_jobs: -1
+  gradient_boosting:
+    max_iter: 200
+    learning_rate: 0.05
+
+evaluation:
+  outputs_folder: outputs
+  top_fraction: 0.10       # "the top 10%": the share of coins the scorer is most sure about
+  bootstrap_draws: 200     # how many re-drawn exams to score when measuring the wobble
+  reference_model: logistic_regression   # the simple scorer the others are compared with
+
 audit:
   # The leakage audit reads the TRAIN pile only. Validation and test are never opened by it.
   outputs_folder: outputs      # inside the project folder. Never committed.
