@@ -43,6 +43,19 @@ def validate_config(config: dict) -> dict:
 
     if not isinstance(config["seed"], int):
         raise ValueError("seed must be a whole number")
+
+    final = config["final"]
+    if final["selection"] != "average_pr_auc":
+        raise ValueError("final.selection must be average_pr_auc (the only rule that is built)")
+    if not final["candidates"] or not set(final["candidates"]) <= set(config["models"]):
+        raise ValueError("final.candidates must be a non-empty list of models from the models section")
+    if not final["scenarios"]:
+        raise ValueError("final.scenarios needs at least one scenario")
+    for name, costs in final["scenarios"].items():
+        if set(costs) != {"holding_crasher", "skipped_good"} or any(v <= 0 for v in costs.values()):
+            raise ValueError(f"final.scenarios.{name}: needs holding_crasher and skipped_good, both above 0")
+    if any(not 0 < s < 1 for s in final["grid_shares"]):
+        raise ValueError("final.grid_shares must all be between 0 and 1")
     return config
 
 
