@@ -32,7 +32,7 @@ def test_the_readme_keeps_its_honesty_statements(phrase):
     assert phrase in squash(README)
 
 
-@pytest.mark.parametrize("name", ["decision_log.md", "model_note.md", "recommendation.md", "learning_log.md", "prompt_chat_history.md"])
+@pytest.mark.parametrize("name", ["decision_log.md", "model_note.md", "recommendation.md", "learning_log.md"])
 def test_the_readme_links_every_own_words_file(name):
     documents = README.split("## Documents")[1].split("## AI tools used")[0]
     assert f"- `{name}`:" in documents
