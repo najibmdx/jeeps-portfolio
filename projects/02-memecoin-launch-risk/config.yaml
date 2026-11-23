@@ -71,6 +71,68 @@ evaluation:
   bootstrap_draws: 200     # how many re-drawn exams to score when measuring the wobble
   reference_model: logistic_regression   # the simple scorer the others are compared with
 
+tuning:
+  # Time-ordered tuning, on the TRAIN pile only. Train is cut into n_blocks consecutive time blocks;
+  # every trial learns from the earlier blocks and is graded on the next one (past predicts future).
+  # Winner = best average over the folds of: mean of (crash PR-AUC / lazy guess, survivor PR-AUC / lazy guess).
+  n_blocks: 4
+  grids:
+    logistic_regression:
+      C: [0.01, 0.1, 1, 10]
+    random_forest:
+      max_depth: [8, 16, null]
+      min_samples_leaf: [10, 20, 50]
+    gradient_boosting:
+      learning_rate: [0.03, 0.1]
+      max_iter: [100, 200, 400]
+      max_leaf_nodes: [15, 31]
+      early_stopping: [false]    # fixed off so max_iter means what it says in every fold
+
+ablation:
+  # Does adding the held-back columns help? Tuned settings of `model`, graded on validation.
+  model: gradient_boosting
+  reference: base
+  sets:
+    base:
+      groups: [group2, group3]
+    plus_group1_no_clock:        # group1 without the two columns the audit flagged as clock-like
+      groups: [group1, group2, group3]
+      exclude: [group1_migrate_year, group1_migrate_month]
+    plus_group4:                 # group4 timing could not be verified
+      groups: [group2, group3, group4]
+    plus_both:
+      groups: [group1, group2, group3, group4]
+      exclude: [group1_migrate_year, group1_migrate_month]
+
+tuning:
+  # Time-ordered tuning on the TRAIN pile only. Train is cut into n_blocks consecutive blocks.
+  # Trial k trains on blocks before k and is graded on block k (so the past predicts the future).
+  # Coins whose label was not yet known when the graded block starts are dropped from that trial.
+  n_blocks: 4
+  # Each grid is small on purpose. Score = average of the crash-side and survivor-side
+  # "times better than the lazy guess" (PR-AUC divided by that block's baseline), averaged over blocks.
+  grids:
+    logistic_regression:
+      C: [0.01, 0.1, 1.0, 10.0]
+    random_forest:
+      max_depth: [6, 12, null]
+      min_samples_leaf: [20, 50]
+    gradient_boosting:
+      learning_rate: [0.03, 0.1]
+      max_iter: [100, 300]
+      max_leaf_nodes: [15, 31]
+  tuned_params_file: tuned_params.yaml
+
+ablation:
+  # Which extra column groups to test on top of features.groups, using the tuned model below.
+  model: gradient_boosting
+  never_use: [group1_migrate_year, group1_migrate_month]   # flagged clock-like by the leakage audit
+  sets:
+    reference: []
+    plus_group1: [group1]
+    plus_group4: [group4]
+    plus_group1_and_group4: [group1, group4]
+
 audit:
   # The leakage audit reads the TRAIN pile only. Validation and test are never opened by it.
   outputs_folder: outputs      # inside the project folder. Never committed.
