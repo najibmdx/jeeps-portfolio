@@ -72,39 +72,6 @@ evaluation:
   reference_model: logistic_regression   # the simple scorer the others are compared with
 
 tuning:
-  # Time-ordered tuning, on the TRAIN pile only. Train is cut into n_blocks consecutive time blocks;
-  # every trial learns from the earlier blocks and is graded on the next one (past predicts future).
-  # Winner = best average over the folds of: mean of (crash PR-AUC / lazy guess, survivor PR-AUC / lazy guess).
-  n_blocks: 4
-  grids:
-    logistic_regression:
-      C: [0.01, 0.1, 1, 10]
-    random_forest:
-      max_depth: [8, 16, null]
-      min_samples_leaf: [10, 20, 50]
-    gradient_boosting:
-      learning_rate: [0.03, 0.1]
-      max_iter: [100, 200, 400]
-      max_leaf_nodes: [15, 31]
-      early_stopping: [false]    # fixed off so max_iter means what it says in every fold
-
-ablation:
-  # Does adding the held-back columns help? Tuned settings of `model`, graded on validation.
-  model: gradient_boosting
-  reference: base
-  sets:
-    base:
-      groups: [group2, group3]
-    plus_group1_no_clock:        # group1 without the two columns the audit flagged as clock-like
-      groups: [group1, group2, group3]
-      exclude: [group1_migrate_year, group1_migrate_month]
-    plus_group4:                 # group4 timing could not be verified
-      groups: [group2, group3, group4]
-    plus_both:
-      groups: [group1, group2, group3, group4]
-      exclude: [group1_migrate_year, group1_migrate_month]
-
-tuning:
   # Time-ordered tuning on the TRAIN pile only. Train is cut into n_blocks consecutive blocks.
   # Trial k trains on blocks before k and is graded on block k (so the past predicts the future).
   # Coins whose label was not yet known when the graded block starts are dropped from that trial.
@@ -132,6 +99,23 @@ ablation:
     plus_group1: [group1]
     plus_group4: [group4]
     plus_group1_and_group4: [group1, group4]
+
+final:
+  # Stage 6. Choose the model and the cut-offs on VALIDATION, freeze them in a file, then open TEST once.
+  selection: average_pr_auc      # highest average of crash-side and survivor-side PR-AUC on validation
+  candidates: [logistic_regression, random_forest, gradient_boosting]   # tuned settings come from tuned_params.yaml
+  # A flag means "likely to crash". It is a risk flag, never a trade signal.
+  # The two mistakes: skipped_good = flagged a coin that would have survived;
+  #                   holding_crasher = did not flag a coin that crashes.
+  # The costs below are INVENTED, unit-free, and only show how the best cut-off moves when the mistakes
+  # are not equally bad. They are not measured from any real trading.
+  scenarios:
+    equal:                  {holding_crasher: 1, skipped_good: 1}
+    crasher_costs_3x:       {holding_crasher: 3, skipped_good: 1}
+    skipped_good_costs_3x:  {holding_crasher: 1, skipped_good: 3}
+  frozen_file: frozen_choice.yaml          # in the project folder. Committed BEFORE the test pile is opened.
+  test_lock_file: test_opened.lock         # inside data/. Written the moment the test pile is opened.
+  grid_shares: [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]   # flag-share grid shown next to the chosen cut-offs
 
 audit:
   # The leakage audit reads the TRAIN pile only. Validation and test are never opened by it.

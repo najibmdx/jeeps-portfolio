@@ -1,0 +1,102 @@
+note: written by select_final.py from TRAIN and VALIDATION only. Commit this file
+  before opening the test pile.
+rule: average_pr_auc
+model: random_forest
+model_params:
+  n_estimators: 300
+  min_samples_leaf: 20
+  n_jobs: -1
+  max_depth: null
+fit_on: train only (not train + validation), exactly as validated
+feature_groups:
+- group2
+- group3
+n_features: 81
+columns_sha256: 4760c8a21ff0e3f16ec09229b516f13ce2b63f056c7a404ecbf2bd99fa7b8302
+seed: 42
+train_rows: 12981
+validation:
+  rows: 4327
+  crash_share: 0.7127
+  selection_table:
+    logistic_regression:
+      crash_pr_auc: 0.8086553150695033
+      survivor_pr_auc: 0.4340158693805648
+      average: 0.6213355922250341
+    random_forest:
+      crash_pr_auc: 0.8227734501659911
+      survivor_pr_auc: 0.478014274802971
+      average: 0.6503938624844811
+    gradient_boosting:
+      crash_pr_auc: 0.8144267236742437
+      survivor_pr_auc: 0.47975960471551243
+      average: 0.6470931641948781
+  top_fraction: 0.1
+  side_metrics:
+    crash:
+      baseline: 0.7127
+      pr_auc: 0.8228
+      pr_auc_times_baseline: 1.15
+      precision_top: 0.9007
+      lift_top: 1.26
+    survivor:
+      baseline: 0.2873
+      pr_auc: 0.478
+      pr_auc_times_baseline: 1.66
+      precision_top: 0.5658
+      lift_top: 1.97
+scenarios:
+  equal:
+    costs:
+      holding_crasher: 1
+      skipped_good: 1
+    cutoff: 0.39575112821154657
+    validation:
+      counts:
+        n: 4327
+        crashers: 3084
+        survivors: 1243
+        flagged: 3784
+        flagged_crash: 2855
+        skipped_good: 929
+        held_crasher: 229
+        kept_survivor: 314
+      cost_per_coin: 0.2676
+      cost_per_coin_flag_nothing: 0.7127
+      cost_per_coin_flag_everything: 0.2873
+  crasher_costs_3x:
+    costs:
+      holding_crasher: 3
+      skipped_good: 1
+    cutoff: 0.1590673117779587
+    validation:
+      counts:
+        n: 4327
+        crashers: 3084
+        survivors: 1243
+        flagged: 4310
+        flagged_crash: 3082
+        skipped_good: 1228
+        held_crasher: 2
+        kept_survivor: 15
+      cost_per_coin: 0.2852
+      cost_per_coin_flag_nothing: 2.1382
+      cost_per_coin_flag_everything: 0.2873
+  skipped_good_costs_3x:
+    costs:
+      holding_crasher: 1
+      skipped_good: 3
+    cutoff: 0.5918648797967099
+    validation:
+      counts:
+        n: 4327
+        crashers: 3084
+        survivors: 1243
+        flagged: 2498
+        flagged_crash: 2025
+        skipped_good: 473
+        held_crasher: 1059
+        kept_survivor: 770
+      cost_per_coin: 0.5727
+      cost_per_coin_flag_nothing: 0.7127
+      cost_per_coin_flag_everything: 0.8618
