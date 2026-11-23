@@ -1,0 +1,51 @@
+# Settings for project 02 (Memecoin Launch Risk). Change these instead of editing the code.
+# Learning project. No claim about trading use, returns or profit.
+
+label:
+  # The 30% line and the 20-minute window are the MELT authors' numbers, not ours.
+  # The label file already holds min_ratio (lowest price in the 20 minutes after
+  # migration / price at migration), so the window is recorded here but not recomputed.
+  source_column: min_ratio
+  crash_line: 0.3        # label = 1 when min_ratio is below this
+  window_minutes: 20
+
+scope:
+  # The authors' own filter. A coin stays only if BOTH hold.
+  min_holders: 100               # column group3_holder_num
+  min_valid_swap_seconds: 60     # column group3_time_span_valid
+  holders_column: group3_holder_num
+  valid_swap_column: group3_time_span_valid
+
+split:
+  # Order coins by migration time = mint_ts + group3_time_span, oldest first.
+  # Oldest share is train, next is validation, newest is test. Test is opened once.
+  order_columns: [mint_ts, group3_time_span]
+  train: 0.6
+  validation: 0.2
+  test: 0.2
+
+columns:
+  feature_prefix: group          # tabular feature columns all start with this
+  not_tabular: [mint_ts, mint_address, ts, ts_len]
+  # Measured after migration. Never allowed as features.
+  banned_as_features: [min_ratio, return_ratio, manipulated, label]
+
+seed: 42   # fixed so that every run gives the same numbers
+
+data:
+  feature:
+    file: feature.pkl
+    bytes: 517642519
+    sha256: 1b27d71f911aa269b1953c834d67cc6d87d31dffc5e8f58f8847b6e560b41f71
+    # No scripted download: the authors' Google Drive shows a virus-scan page.
+    source: "Google Drive link in the README of https://github.com/git-disl/MELT"
+  label:
+    file: label.csv
+    bytes: 3861124
+    sha256: dcfcce188fb352466b76ab8345f79633766c93e96d29729282ab114133fcc09a
+    url: https://raw.githubusercontent.com/git-disl/MELT/master/data/label/label.csv
+
+credit:
+  dataset: "MELT: A Behavioral Trace Dataset for High-Risk Memecoin Launch Detection (arXiv 2602.13480)"
+  repository: "https://github.com/git-disl/MELT"
+  licence: "CC BY-NC 4.0 (non-commercial; credit the authors)"
