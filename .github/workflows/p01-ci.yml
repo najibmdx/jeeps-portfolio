@@ -39,3 +39,7 @@ jobs:
         env:
           RUN_SLOW: "1"
         run: python -m pytest -q
+
+      # run.sh has just written outputs/, so the README numbers can be checked against them.
+      - name: README numbers match the saved results
+        run: python src/check_readme.py
