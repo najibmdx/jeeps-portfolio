@@ -31,11 +31,19 @@ def load_piles(data_dir, config: dict, parts=MODELLING_PARTS) -> dict:
     return piles
 
 
-def select_features(all_columns, config: dict) -> list:
-    """The columns the scorer may see: allowed feature columns that belong to the chosen groups."""
-    groups = config["features"]["groups"]
+def select_features(all_columns, config: dict, groups=None, drop=()) -> list:
+    """The columns the scorer may see: allowed feature columns that belong to the chosen groups.
+
+    `groups` defaults to features.groups in the config. `drop` removes named columns even from a
+    chosen group (every dropped name must exist, so a typo cannot quietly keep a column in).
+    """
+    groups = list(config["features"]["groups"] if groups is None else groups)
+    all_columns = list(all_columns)
+    missing = [c for c in drop if c not in all_columns]
+    if missing:
+        raise ValueError(f"cannot drop columns that do not exist: {missing}")
     allowed = columns.feature_columns(all_columns, config)
-    chosen = [c for c in allowed if c.split("_")[0] in groups]
+    chosen = [c for c in allowed if c.split("_")[0] in groups and c not in drop]
     for group in groups:
         if not any(c.split("_")[0] == group for c in chosen):
             raise ValueError(f"no columns found for group {group}")
