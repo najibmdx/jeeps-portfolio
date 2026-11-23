@@ -11,6 +11,13 @@ features:
 
 seed: 42   # fixed so that every run gives the same numbers
 
+data:
+  # Public UCI "Bank Marketing" file (Moro, Rita and Cortez, 2014). src/get_data.py downloads it
+  # only when data/bank.db is missing, and stops if the counts below do not match.
+  url: https://archive.ics.uci.edu/static/public/222/bank+marketing.zip
+  expected_rows: 41188   # includes the 12 duplicates, which split.py drops later
+  expected_yes: 4640
+
 models:
   logistic_regression:
     max_iter: 1000
