@@ -44,8 +44,30 @@ data:
     bytes: 3861124
     sha256: dcfcce188fb352466b76ab8345f79633766c93e96d29729282ab114133fcc09a
     url: https://raw.githubusercontent.com/git-disl/MELT/master/data/label/label.csv
+  prepared_folder: prepared   # inside data/. Holds the three piles. Never committed.
 
 credit:
   dataset: "MELT: A Behavioral Trace Dataset for High-Risk Memecoin Launch Detection (arXiv 2602.13480)"
   repository: "https://github.com/git-disl/MELT"
   licence: "CC BY-NC 4.0 (non-commercial; credit the authors)"
+
+# Facts from the inspection run on the real files (23 Nov). prepare.py must reproduce
+# every one of these on the real data. If one differs, it stops and saves nothing.
+verified_on_real_data:
+  rows_feature: 41703
+  rows_label: 41470
+  matched_before_filter: 41470
+  unlabelled: 233
+  label_without_feature: 0
+  crash_before_filter: 27988
+  crash_share_before_filter_percent: 67.5
+  after_filter: 21635
+  crash_share_after_filter_percent: 63.2
+  sizes: [12981, 4327, 4327]                  # train, validation, test
+  crash_share_percent: [61.8, 71.3, 59.2]    # train, validation, test
+  boundary: [6, 2]                            # train->validation, validation->test
+  moved_by_creation_order: 82
+  migration_ranges:                           # UTC, to the minute
+    - ["2024-12-09 22:33", "2025-01-24 14:23"]
+    - ["2025-01-24 14:24", "2025-02-06 07:13"]
+    - ["2025-02-06 07:13", "2025-02-28 23:43"]

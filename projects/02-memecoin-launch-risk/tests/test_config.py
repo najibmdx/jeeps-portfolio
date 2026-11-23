@@ -75,3 +75,17 @@ def test_a_crash_line_outside_0_to_1_is_refused(config):
     bad["label"]["crash_line"] = 30
     with pytest.raises(ValueError, match="crash_line"):
         settings.validate_config(bad)
+
+
+def test_verified_real_data_numbers_match_the_inspection_report(config):
+    v = config["verified_on_real_data"]
+    assert (v["rows_feature"], v["rows_label"], v["unlabelled"]) == (41703, 41470, 233)
+    assert v["after_filter"] == 21635 and v["sizes"] == [12981, 4327, 4327]
+    assert sum(v["sizes"]) == v["after_filter"]
+    assert v["crash_share_percent"] == [61.8, 71.3, 59.2]
+    assert v["boundary"] == [6, 2] and v["moved_by_creation_order"] == 82
+    assert v["crash_before_filter"] == 27988 and v["matched_before_filter"] == 41470
+
+
+def test_prepared_folder_is_named_in_the_config(config):
+    assert config["data"]["prepared_folder"] == "prepared"
