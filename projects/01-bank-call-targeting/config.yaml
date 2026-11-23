@@ -64,3 +64,17 @@ scenarios:
     cost_per_call: 0.09
   calls_expensive:
     cost_per_call: 0.15
+
+tuning:
+  # Time-aware tuning on the TRAINING set only (see src/tune.py).
+  min_train_months: 5   # first practice exam: learn on the first 5 months, test on the 6th, then grow
+  grids:                # every combination is tried; anything not listed stays as in `models` above
+    logistic_regression:
+      C: [0.01, 0.1, 1, 10]
+    random_forest:
+      min_samples_leaf: [20, 50, 100, 200]
+      max_depth: [6, 12]
+    gradient_boosting:
+      max_iter: [50, 100, 200]
+      max_leaf_nodes: [8, 15]
+      min_samples_leaf: [100, 300]
