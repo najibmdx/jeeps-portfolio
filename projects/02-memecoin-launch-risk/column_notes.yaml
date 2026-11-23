@@ -1,0 +1,746 @@
+# What each of the 122 tabular columns is, and whether it is known at the moment of migration.
+# Written from the authors' feature code (git-disl/MELT, src/feat_gen.py, master, read 24 Nov 2026).
+# We do NOT have the raw transaction files, so every "known_at_migration" rests on reading that code.
+#
+# known_at_migration:
+#   code_read   the code builds it only from transactions up to migration
+#   unverified  it also depends on a file we do not have; the timing cannot be checked
+# watch (free text, may be empty):
+#   clock            may tell the model WHEN the coin launched, not anything about the coin
+#   clock_possible   may drift with time (checked by the audit, not assumed)
+#   zero_placeholder a 0 can mean "no data", not a real zero
+#
+# Review these lines yourself. The decision in your own words goes in decision_log.md.
+
+group1_price:
+  group: group1
+  meaning: SOL price for the hour in which the coin migrates (from the authors' hourly SOL price file).
+  known_at_migration: unverified
+  why: The hourly price file is not in our data. If the value is the hour's close or average, it includes up to 59 minutes after migration.
+  watch: clock
+group1_migrate_year:
+  group: group1
+  meaning: Migration year (UTC).
+  known_at_migration: code_read
+  why: Taken from the timestamp of the coin's last pre-migration transaction, which the authors treat as the migration time.
+  watch: clock
+group1_migrate_month:
+  group: group1
+  meaning: Migration month (UTC).
+  known_at_migration: code_read
+  why: Taken from the timestamp of the coin's last pre-migration transaction, which the authors treat as the migration time. Train covers December and January only, so a model using month meets February values it never saw on test.
+  watch: clock
+group1_migrate_day:
+  group: group1
+  meaning: Migration day of the month (UTC).
+  known_at_migration: code_read
+  why: Taken from the timestamp of the coin's last pre-migration transaction, which the authors treat as the migration time.
+  watch: clock
+group1_migrate_hour:
+  group: group1
+  meaning: Migration hour of the day (UTC).
+  known_at_migration: code_read
+  why: Taken from the timestamp of the coin's last pre-migration transaction, which the authors treat as the migration time.
+  watch: clock
+group1_migrate_weekday:
+  group: group1
+  meaning: Migration day of the week (UTC).
+  known_at_migration: code_read
+  why: Taken from the timestamp of the coin's last pre-migration transaction, which the authors treat as the migration time.
+  watch: clock
+group2_holder_gini:
+  group: group2
+  meaning: How unequal the holdings are among wallets holding at least 1 token (0 = equal, 1 = one wallet holds all).
+  known_at_migration: code_read
+  why: Built in the authors' code only from the coin's transactions up to migration. We read the code; we do not have the raw transaction files.
+  watch: ''
+group2_top1_pct:
+  group: group2
+  meaning: Share of the supply held by the largest 1 holder(s) at migration.
+  known_at_migration: code_read
+  why: Built in the authors' code only from the coin's transactions up to migration. We read the code; we do not have the raw transaction files.
+  watch: ''
+group2_top5_pct:
+  group: group2
+  meaning: Share of the supply held by the largest 5 holder(s) at migration.
+  known_at_migration: code_read
+  why: Built in the authors' code only from the coin's transactions up to migration. We read the code; we do not have the raw transaction files.
+  watch: ''
+group2_top10_pct:
+  group: group2
+  meaning: Share of the supply held by the largest 10 holder(s) at migration.
+  known_at_migration: code_read
+  why: Built in the authors' code only from the coin's transactions up to migration. We read the code; we do not have the raw transaction files.
+  watch: ''
+group2_top20_pct:
+  group: group2
+  meaning: Share of the supply held by the largest 20 holder(s) at migration.
+  known_at_migration: code_read
+  why: Built in the authors' code only from the coin's transactions up to migration. We read the code; we do not have the raw transaction files.
+  watch: ''
+group2_top50_pct:
+  group: group2
+  meaning: Share of the supply held by the largest 50 holder(s) at migration.
+  known_at_migration: code_read
+  why: Built in the authors' code only from the coin's transactions up to migration. We read the code; we do not have the raw transaction files.
+  watch: ''
+group2_top100_pct:
+  group: group2
+  meaning: Share of the supply held by the largest 100 holder(s) at migration.
+  known_at_migration: code_read
+  why: Built in the authors' code only from the coin's transactions up to migration. We read the code; we do not have the raw transaction files.
+  watch: ''
+group2_top10_to_top100:
+  group: group2
+  meaning: Top-10 share divided by top-100 share (how much of the big holders' supply sits in the top 10).
+  known_at_migration: code_read
+  why: Built in the authors' code only from the coin's transactions up to migration. We read the code; we do not have the raw transaction files.
+  watch: ''
+group2_sniper_0s_hold_pct:
+  group: group2
+  meaning: Share of the supply held at migration by wallets that swapped within 0 second(s) of the coin's creation.
+  known_at_migration: code_read
+  why: Built in the authors' code only from the coin's transactions up to migration. We read the code; we do not have the raw transaction files.
+  watch: ''
+group2_sniper_1s_hold_pct:
+  group: group2
+  meaning: Share of the supply held at migration by wallets that swapped within 1 second(s) of the coin's creation.
+  known_at_migration: code_read
+  why: Built in the authors' code only from the coin's transactions up to migration. We read the code; we do not have the raw transaction files.
+  watch: ''
+group2_sniper_5s_hold_pct:
+  group: group2
+  meaning: Share of the supply held at migration by wallets that swapped within 5 second(s) of the coin's creation.
+  known_at_migration: code_read
+  why: Built in the authors' code only from the coin's transactions up to migration. We read the code; we do not have the raw transaction files.
+  watch: ''
+group2_sniper_10s_hold_pct:
+  group: group2
+  meaning: Share of the supply held at migration by wallets that swapped within 10 second(s) of the coin's creation.
+  known_at_migration: code_read
+  why: Built in the authors' code only from the coin's transactions up to migration. We read the code; we do not have the raw transaction files.
+  watch: ''
+group2_early_top1_hold_pct:
+  group: group2
+  meaning: Share of the supply still held at migration by the first 1 distinct buyer(s).
+  known_at_migration: code_read
+  why: Built in the authors' code only from the coin's transactions up to migration. We read the code; we do not have the raw transaction files.
+  watch: ''
+group2_early_top1_initial_hold_pct:
+  group: group2
+  meaning: Share of the supply those first 1 distinct buyer(s) bought in their first purchase.
+  known_at_migration: code_read
+  why: Built in the authors' code only from the coin's transactions up to migration. We read the code; we do not have the raw transaction files.
+  watch: ''
+group2_early_top1_hold_ratio:
+  group: group2
+  meaning: Still-held share divided by first-purchase share for the first 1 buyer(s) (below 1 means they have sold).
+  known_at_migration: code_read
+  why: Built in the authors' code only from the coin's transactions up to migration. We read the code; we do not have the raw transaction files.
+  watch: ''
+group2_early_top5_hold_pct:
+  group: group2
+  meaning: Share of the supply still held at migration by the first 5 distinct buyer(s).
+  known_at_migration: code_read
+  why: Built in the authors' code only from the coin's transactions up to migration. We read the code; we do not have the raw transaction files.
+  watch: ''
+group2_early_top5_initial_hold_pct:
+  group: group2
+  meaning: Share of the supply those first 5 distinct buyer(s) bought in their first purchase.
+  known_at_migration: code_read
+  why: Built in the authors' code only from the coin's transactions up to migration. We read the code; we do not have the raw transaction files.
+  watch: ''
+group2_early_top5_hold_ratio:
+  group: group2
+  meaning: Still-held share divided by first-purchase share for the first 5 buyer(s) (below 1 means they have sold).
+  known_at_migration: code_read
+  why: Built in the authors' code only from the coin's transactions up to migration. We read the code; we do not have the raw transaction files.
+  watch: ''
+group2_early_top10_hold_pct:
+  group: group2
+  meaning: Share of the supply still held at migration by the first 10 distinct buyer(s).
+  known_at_migration: code_read
+  why: Built in the authors' code only from the coin's transactions up to migration. We read the code; we do not have the raw transaction files.
+  watch: ''
+group2_early_top10_initial_hold_pct:
+  group: group2
+  meaning: Share of the supply those first 10 distinct buyer(s) bought in their first purchase.
+  known_at_migration: code_read
+  why: Built in the authors' code only from the coin's transactions up to migration. We read the code; we do not have the raw transaction files.
+  watch: ''
+group2_early_top10_hold_ratio:
+  group: group2
+  meaning: Still-held share divided by first-purchase share for the first 10 buyer(s) (below 1 means they have sold).
+  known_at_migration: code_read
+  why: Built in the authors' code only from the coin's transactions up to migration. We read the code; we do not have the raw transaction files.
+  watch: ''
+group2_early_top20_hold_pct:
+  group: group2
+  meaning: Share of the supply still held at migration by the first 20 distinct buyer(s).
+  known_at_migration: code_read
+  why: Built in the authors' code only from the coin's transactions up to migration. We read the code; we do not have the raw transaction files.
+  watch: ''
+group2_early_top20_initial_hold_pct:
+  group: group2
+  meaning: Share of the supply those first 20 distinct buyer(s) bought in their first purchase.
+  known_at_migration: code_read
+  why: Built in the authors' code only from the coin's transactions up to migration. We read the code; we do not have the raw transaction files.
+  watch: ''
+group2_early_top20_hold_ratio:
+  group: group2
+  meaning: Still-held share divided by first-purchase share for the first 20 buyer(s) (below 1 means they have sold).
+  known_at_migration: code_read
+  why: Built in the authors' code only from the coin's transactions up to migration. We read the code; we do not have the raw transaction files.
+  watch: ''
+group2_dev_hold_pct:
+  group: group2
+  meaning: Share of the supply held at migration by the developer wallet(s).
+  known_at_migration: code_read
+  why: Built in the authors' code only from the coin's transactions up to migration. We read the code; we do not have the raw transaction files.
+  watch: ''
+group2_dev_initial_hold_pct:
+  group: group2
+  meaning: Share of the supply the developer wallet(s) received at the start.
+  known_at_migration: code_read
+  why: Built in the authors' code only from the coin's transactions up to migration. We read the code; we do not have the raw transaction files.
+  watch: ''
+group2_dev_hold_ratio:
+  group: group2
+  meaning: 'Developer''s current holding SHARE divided by their starting token AMOUNT. A quirk in the authors'' code: it divides a share by an amount, so it is not a true ratio.'
+  known_at_migration: code_read
+  why: Built in the authors' code only from the coin's transactions up to migration. We read the code; we do not have the raw transaction files.
+  watch: 'zero_placeholder: the code turns a missing value into 0'
+group2_sniper_0s_num:
+  group: group2
+  meaning: Number of wallets that swapped within 0 second(s) of the coin's creation.
+  known_at_migration: code_read
+  why: Built in the authors' code only from the coin's transactions up to migration. We read the code; we do not have the raw transaction files.
+  watch: ''
+group2_sniper_0s_ratio:
+  group: group2
+  meaning: Those 0-second wallets as a share of all trading wallets.
+  known_at_migration: code_read
+  why: Built in the authors' code only from the coin's transactions up to migration. We read the code; we do not have the raw transaction files.
+  watch: ''
+group2_sniper_1s_num:
+  group: group2
+  meaning: Number of wallets that swapped within 1 second(s) of the coin's creation.
+  known_at_migration: code_read
+  why: Built in the authors' code only from the coin's transactions up to migration. We read the code; we do not have the raw transaction files.
+  watch: ''
+group2_sniper_1s_ratio:
+  group: group2
+  meaning: Those 1-second wallets as a share of all trading wallets.
+  known_at_migration: code_read
+  why: Built in the authors' code only from the coin's transactions up to migration. We read the code; we do not have the raw transaction files.
+  watch: ''
+group2_sniper_5s_num:
+  group: group2
+  meaning: Number of wallets that swapped within 5 second(s) of the coin's creation.
+  known_at_migration: code_read
+  why: Built in the authors' code only from the coin's transactions up to migration. We read the code; we do not have the raw transaction files.
+  watch: ''
+group2_sniper_5s_ratio:
+  group: group2
+  meaning: Those 5-second wallets as a share of all trading wallets.
+  known_at_migration: code_read
+  why: Built in the authors' code only from the coin's transactions up to migration. We read the code; we do not have the raw transaction files.
+  watch: ''
+group2_sniper_10s_num:
+  group: group2
+  meaning: Number of wallets that swapped within 10 second(s) of the coin's creation.
+  known_at_migration: code_read
+  why: Built in the authors' code only from the coin's transactions up to migration. We read the code; we do not have the raw transaction files.
+  watch: ''
+group2_sniper_10s_ratio:
+  group: group2
+  meaning: Those 10-second wallets as a share of all trading wallets.
+  known_at_migration: code_read
+  why: Built in the authors' code only from the coin's transactions up to migration. We read the code; we do not have the raw transaction files.
+  watch: ''
+group2_early_top5_realized_pnl_mean:
+  group: group2
+  meaning: Average profit or loss already locked in by sales, for the first 5 distinct buyers. The unit is the authors' price column (not checked).
+  known_at_migration: code_read
+  why: Built in the authors' code only from the coin's transactions up to migration. We read the code; we do not have the raw transaction files.
+  watch: 'zero_placeholder: the code returns 0.0 when the group is empty or none of them has sold, so 0 can mean no data'
+group2_early_top5_unrealized_pnl_mean:
+  group: group2
+  meaning: Average profit or loss on tokens still held at the last pre-migration price, for the first 5 distinct buyers.
+  known_at_migration: code_read
+  why: Built in the authors' code only from the coin's transactions up to migration. We read the code; we do not have the raw transaction files.
+  watch: 'zero_placeholder: the code returns 0.0 when the group is empty, so 0 can mean no data'
+group2_early_top10_realized_pnl_mean:
+  group: group2
+  meaning: Average profit or loss already locked in by sales, for the first 10 distinct buyers. The unit is the authors' price column (not checked).
+  known_at_migration: code_read
+  why: Built in the authors' code only from the coin's transactions up to migration. We read the code; we do not have the raw transaction files.
+  watch: 'zero_placeholder: the code returns 0.0 when the group is empty or none of them has sold, so 0 can mean no data'
+group2_early_top10_unrealized_pnl_mean:
+  group: group2
+  meaning: Average profit or loss on tokens still held at the last pre-migration price, for the first 10 distinct buyers.
+  known_at_migration: code_read
+  why: Built in the authors' code only from the coin's transactions up to migration. We read the code; we do not have the raw transaction files.
+  watch: 'zero_placeholder: the code returns 0.0 when the group is empty, so 0 can mean no data'
+group2_early_top20_realized_pnl_mean:
+  group: group2
+  meaning: Average profit or loss already locked in by sales, for the first 20 distinct buyers. The unit is the authors' price column (not checked).
+  known_at_migration: code_read
+  why: Built in the authors' code only from the coin's transactions up to migration. We read the code; we do not have the raw transaction files.
+  watch: 'zero_placeholder: the code returns 0.0 when the group is empty or none of them has sold, so 0 can mean no data'
+group2_early_top20_unrealized_pnl_mean:
+  group: group2
+  meaning: Average profit or loss on tokens still held at the last pre-migration price, for the first 20 distinct buyers.
+  known_at_migration: code_read
+  why: Built in the authors' code only from the coin's transactions up to migration. We read the code; we do not have the raw transaction files.
+  watch: 'zero_placeholder: the code returns 0.0 when the group is empty, so 0 can mean no data'
+group2_sniper_0s_realized_pnl_mean:
+  group: group2
+  meaning: Average profit or loss already locked in by sales, for wallets that swapped in the creation second. The unit is the authors' price column (not checked).
+  known_at_migration: code_read
+  why: Built in the authors' code only from the coin's transactions up to migration. We read the code; we do not have the raw transaction files.
+  watch: 'zero_placeholder: the code returns 0.0 when the group is empty or none of them has sold, so 0 can mean no data'
+group2_sniper_0s_unrealized_pnl_mean:
+  group: group2
+  meaning: Average profit or loss on tokens still held at the last pre-migration price, for wallets that swapped in the creation second.
+  known_at_migration: code_read
+  why: Built in the authors' code only from the coin's transactions up to migration. We read the code; we do not have the raw transaction files.
+  watch: 'zero_placeholder: the code returns 0.0 when the group is empty, so 0 can mean no data'
+group2_sniper_1s_realized_pnl_mean:
+  group: group2
+  meaning: Average profit or loss already locked in by sales, for wallets that swapped within 1 second of creation. The unit is the authors' price column (not checked).
+  known_at_migration: code_read
+  why: Built in the authors' code only from the coin's transactions up to migration. We read the code; we do not have the raw transaction files.
+  watch: 'zero_placeholder: the code returns 0.0 when the group is empty or none of them has sold, so 0 can mean no data'
+group2_sniper_1s_unrealized_pnl_mean:
+  group: group2
+  meaning: Average profit or loss on tokens still held at the last pre-migration price, for wallets that swapped within 1 second of creation.
+  known_at_migration: code_read
+  why: Built in the authors' code only from the coin's transactions up to migration. We read the code; we do not have the raw transaction files.
+  watch: 'zero_placeholder: the code returns 0.0 when the group is empty, so 0 can mean no data'
+group2_sniper_5s_realized_pnl_mean:
+  group: group2
+  meaning: Average profit or loss already locked in by sales, for wallets that swapped within 5 seconds of creation. The unit is the authors' price column (not checked).
+  known_at_migration: code_read
+  why: Built in the authors' code only from the coin's transactions up to migration. We read the code; we do not have the raw transaction files.
+  watch: 'zero_placeholder: the code returns 0.0 when the group is empty or none of them has sold, so 0 can mean no data'
+group2_sniper_5s_unrealized_pnl_mean:
+  group: group2
+  meaning: Average profit or loss on tokens still held at the last pre-migration price, for wallets that swapped within 5 seconds of creation.
+  known_at_migration: code_read
+  why: Built in the authors' code only from the coin's transactions up to migration. We read the code; we do not have the raw transaction files.
+  watch: 'zero_placeholder: the code returns 0.0 when the group is empty, so 0 can mean no data'
+group2_sniper_10s_realized_pnl_mean:
+  group: group2
+  meaning: Average profit or loss already locked in by sales, for wallets that swapped within 10 seconds of creation. The unit is the authors' price column (not checked).
+  known_at_migration: code_read
+  why: Built in the authors' code only from the coin's transactions up to migration. We read the code; we do not have the raw transaction files.
+  watch: 'zero_placeholder: the code returns 0.0 when the group is empty or none of them has sold, so 0 can mean no data'
+group2_sniper_10s_unrealized_pnl_mean:
+  group: group2
+  meaning: Average profit or loss on tokens still held at the last pre-migration price, for wallets that swapped within 10 seconds of creation.
+  known_at_migration: code_read
+  why: Built in the authors' code only from the coin's transactions up to migration. We read the code; we do not have the raw transaction files.
+  watch: 'zero_placeholder: the code returns 0.0 when the group is empty, so 0 can mean no data'
+group2_top5_realized_pnl_mean:
+  group: group2
+  meaning: Average profit or loss already locked in by sales, for the 5 largest holders. The unit is the authors' price column (not checked).
+  known_at_migration: code_read
+  why: Built in the authors' code only from the coin's transactions up to migration. We read the code; we do not have the raw transaction files.
+  watch: 'zero_placeholder: the code returns 0.0 when the group is empty or none of them has sold, so 0 can mean no data'
+group2_top5_unrealized_pnl_mean:
+  group: group2
+  meaning: Average profit or loss on tokens still held at the last pre-migration price, for the 5 largest holders.
+  known_at_migration: code_read
+  why: Built in the authors' code only from the coin's transactions up to migration. We read the code; we do not have the raw transaction files.
+  watch: 'zero_placeholder: the code returns 0.0 when the group is empty, so 0 can mean no data'
+group2_top10_realized_pnl_mean:
+  group: group2
+  meaning: Average profit or loss already locked in by sales, for the 10 largest holders. The unit is the authors' price column (not checked).
+  known_at_migration: code_read
+  why: Built in the authors' code only from the coin's transactions up to migration. We read the code; we do not have the raw transaction files.
+  watch: 'zero_placeholder: the code returns 0.0 when the group is empty or none of them has sold, so 0 can mean no data'
+group2_top10_unrealized_pnl_mean:
+  group: group2
+  meaning: Average profit or loss on tokens still held at the last pre-migration price, for the 10 largest holders.
+  known_at_migration: code_read
+  why: Built in the authors' code only from the coin's transactions up to migration. We read the code; we do not have the raw transaction files.
+  watch: 'zero_placeholder: the code returns 0.0 when the group is empty, so 0 can mean no data'
+group2_top20_realized_pnl_mean:
+  group: group2
+  meaning: Average profit or loss already locked in by sales, for the 20 largest holders. The unit is the authors' price column (not checked).
+  known_at_migration: code_read
+  why: Built in the authors' code only from the coin's transactions up to migration. We read the code; we do not have the raw transaction files.
+  watch: 'zero_placeholder: the code returns 0.0 when the group is empty or none of them has sold, so 0 can mean no data'
+group2_top20_unrealized_pnl_mean:
+  group: group2
+  meaning: Average profit or loss on tokens still held at the last pre-migration price, for the 20 largest holders.
+  known_at_migration: code_read
+  why: Built in the authors' code only from the coin's transactions up to migration. We read the code; we do not have the raw transaction files.
+  watch: 'zero_placeholder: the code returns 0.0 when the group is empty, so 0 can mean no data'
+group2_top100_realized_pnl_mean:
+  group: group2
+  meaning: Average profit or loss already locked in by sales, for the 100 largest holders. The unit is the authors' price column (not checked).
+  known_at_migration: code_read
+  why: Built in the authors' code only from the coin's transactions up to migration. We read the code; we do not have the raw transaction files.
+  watch: 'zero_placeholder: the code returns 0.0 when the group is empty or none of them has sold, so 0 can mean no data'
+group2_top100_unrealized_pnl_mean:
+  group: group2
+  meaning: Average profit or loss on tokens still held at the last pre-migration price, for the 100 largest holders.
+  known_at_migration: code_read
+  why: Built in the authors' code only from the coin's transactions up to migration. We read the code; we do not have the raw transaction files.
+  watch: 'zero_placeholder: the code returns 0.0 when the group is empty, so 0 can mean no data'
+group2_all_realized_pnl_mean:
+  group: group2
+  meaning: Average profit or loss already locked in by sales, for all trading wallets. The unit is the authors' price column (not checked).
+  known_at_migration: code_read
+  why: Built in the authors' code only from the coin's transactions up to migration. We read the code; we do not have the raw transaction files.
+  watch: 'zero_placeholder: the code returns 0.0 when the group is empty or none of them has sold, so 0 can mean no data'
+group2_all_unrealized_pnl_mean:
+  group: group2
+  meaning: Average profit or loss on tokens still held at the last pre-migration price, for all trading wallets.
+  known_at_migration: code_read
+  why: Built in the authors' code only from the coin's transactions up to migration. We read the code; we do not have the raw transaction files.
+  watch: 'zero_placeholder: the code returns 0.0 when the group is empty, so 0 can mean no data'
+group3_tx_num:
+  group: group3
+  meaning: Number of transactions before migration (all kinds).
+  known_at_migration: code_read
+  why: Built in the authors' code only from the coin's transactions up to migration. We read the code; we do not have the raw transaction files.
+  watch: 'clock_possible: counts and speeds can drift with market mood over the window'
+group3_tx_num_valid:
+  group: group3
+  meaning: Number of swap transactions before migration.
+  known_at_migration: code_read
+  why: Built in the authors' code only from the coin's transactions up to migration. We read the code; we do not have the raw transaction files.
+  watch: ''
+group3_trader_tup_num:
+  group: group3
+  meaning: Number of (transaction, wallet) records before migration.
+  known_at_migration: code_read
+  why: Built in the authors' code only from the coin's transactions up to migration. We read the code; we do not have the raw transaction files.
+  watch: ''
+group3_time_span:
+  group: group3
+  meaning: Seconds from the coin's creation to its last pre-migration transaction. Also used to find the migration time for the split.
+  known_at_migration: code_read
+  why: Built in the authors' code only from the coin's transactions up to migration. We read the code; we do not have the raw transaction files.
+  watch: ''
+group3_time_span_valid:
+  group: group3
+  meaning: Seconds between the first and last swap before migration. Used in the scope filter (at least 60).
+  known_at_migration: code_read
+  why: Built in the authors' code only from the coin's transactions up to migration. We read the code; we do not have the raw transaction files.
+  watch: ''
+group3_tx_per_sec:
+  group: group3
+  meaning: Transactions per second over the coin's life before migration.
+  known_at_migration: code_read
+  why: Built in the authors' code only from the coin's transactions up to migration. We read the code; we do not have the raw transaction files.
+  watch: 'clock_possible: counts and speeds can drift with market mood over the window'
+group3_tx_per_sec_valid:
+  group: group3
+  meaning: Swaps per second between the first and last swap.
+  known_at_migration: code_read
+  why: Built in the authors' code only from the coin's transactions up to migration. We read the code; we do not have the raw transaction files.
+  watch: ''
+group3_wash_tx_num:
+  group: group3
+  meaning: Number of transactions the authors flag as zero-value (wash-like).
+  known_at_migration: code_read
+  why: Built in the authors' code only from the coin's transactions up to migration. We read the code; we do not have the raw transaction files.
+  watch: ''
+group3_wash_ratio:
+  group: group3
+  meaning: Share of transactions that are zero-value (wash-like).
+  known_at_migration: code_read
+  why: Built in the authors' code only from the coin's transactions up to migration. We read the code; we do not have the raw transaction files.
+  watch: ''
+group3_transfer_tx_num:
+  group: group3
+  meaning: Number of plain token transfers.
+  known_at_migration: code_read
+  why: Built in the authors' code only from the coin's transactions up to migration. We read the code; we do not have the raw transaction files.
+  watch: ''
+group3_transfer_ratio:
+  group: group3
+  meaning: Share of transactions that are transfers.
+  known_at_migration: code_read
+  why: Built in the authors' code only from the coin's transactions up to migration. We read the code; we do not have the raw transaction files.
+  watch: ''
+group3_trader_num:
+  group: group3
+  meaning: Number of distinct wallets that traded.
+  known_at_migration: code_read
+  why: Built in the authors' code only from the coin's transactions up to migration. We read the code; we do not have the raw transaction files.
+  watch: ''
+group3_holder_num:
+  group: group3
+  meaning: Number of wallets holding at least 1 token at migration. Used in the scope filter (at least 100).
+  known_at_migration: code_read
+  why: Built in the authors' code only from the coin's transactions up to migration. We read the code; we do not have the raw transaction files.
+  watch: ''
+group3_buy_num:
+  group: group3
+  meaning: Number of buy records.
+  known_at_migration: code_read
+  why: Built in the authors' code only from the coin's transactions up to migration. We read the code; we do not have the raw transaction files.
+  watch: ''
+group3_sell_num:
+  group: group3
+  meaning: Number of sell records.
+  known_at_migration: code_read
+  why: Built in the authors' code only from the coin's transactions up to migration. We read the code; we do not have the raw transaction files.
+  watch: ''
+group3_buy_user_num:
+  group: group3
+  meaning: Number of distinct buyers.
+  known_at_migration: code_read
+  why: Built in the authors' code only from the coin's transactions up to migration. We read the code; we do not have the raw transaction files.
+  watch: ''
+group3_sell_user_num:
+  group: group3
+  meaning: Number of distinct sellers.
+  known_at_migration: code_read
+  why: Built in the authors' code only from the coin's transactions up to migration. We read the code; we do not have the raw transaction files.
+  watch: ''
+group3_buy_vol:
+  group: group3
+  meaning: Total tokens bought.
+  known_at_migration: code_read
+  why: Built in the authors' code only from the coin's transactions up to migration. We read the code; we do not have the raw transaction files.
+  watch: ''
+group3_sell_vol:
+  group: group3
+  meaning: Total tokens sold.
+  known_at_migration: code_read
+  why: Built in the authors' code only from the coin's transactions up to migration. We read the code; we do not have the raw transaction files.
+  watch: ''
+group3_avg_buy_vol:
+  group: group3
+  meaning: Average tokens per buy.
+  known_at_migration: code_read
+  why: Built in the authors' code only from the coin's transactions up to migration. We read the code; we do not have the raw transaction files.
+  watch: ''
+group3_avg_sell_vol:
+  group: group3
+  meaning: Average tokens per sell.
+  known_at_migration: code_read
+  why: Built in the authors' code only from the coin's transactions up to migration. We read the code; we do not have the raw transaction files.
+  watch: ''
+group3_sell_pressure:
+  group: group3
+  meaning: Tokens sold divided by tokens bought.
+  known_at_migration: code_read
+  why: Built in the authors' code only from the coin's transactions up to migration. We read the code; we do not have the raw transaction files.
+  watch: ''
+group4_holder_gini:
+  group: group4
+  meaning: Same idea as group 2, but wallets that look linked (same swap, same bundle or same signer) are merged into one cluster first. Inequality of holdings after merging.
+  known_at_migration: unverified
+  why: Built from the coin's own transactions, but wallets are merged into clusters using bundle and signer files that we do not have, so how those files were made cannot be checked.
+  watch: ''
+group4_top1_pct:
+  group: group4
+  meaning: Same idea as group 2, but wallets that look linked (same swap, same bundle or same signer) are merged into one cluster first. Share of the supply held by the largest 1 holder(s) after merging.
+  known_at_migration: unverified
+  why: Built from the coin's own transactions, but wallets are merged into clusters using bundle and signer files that we do not have, so how those files were made cannot be checked.
+  watch: ''
+group4_top5_pct:
+  group: group4
+  meaning: Same idea as group 2, but wallets that look linked (same swap, same bundle or same signer) are merged into one cluster first. Share of the supply held by the largest 5 holder(s) after merging.
+  known_at_migration: unverified
+  why: Built from the coin's own transactions, but wallets are merged into clusters using bundle and signer files that we do not have, so how those files were made cannot be checked.
+  watch: ''
+group4_top10_pct:
+  group: group4
+  meaning: Same idea as group 2, but wallets that look linked (same swap, same bundle or same signer) are merged into one cluster first. Share of the supply held by the largest 10 holder(s) after merging.
+  known_at_migration: unverified
+  why: Built from the coin's own transactions, but wallets are merged into clusters using bundle and signer files that we do not have, so how those files were made cannot be checked.
+  watch: ''
+group4_top20_pct:
+  group: group4
+  meaning: Same idea as group 2, but wallets that look linked (same swap, same bundle or same signer) are merged into one cluster first. Share of the supply held by the largest 20 holder(s) after merging.
+  known_at_migration: unverified
+  why: Built from the coin's own transactions, but wallets are merged into clusters using bundle and signer files that we do not have, so how those files were made cannot be checked.
+  watch: ''
+group4_top50_pct:
+  group: group4
+  meaning: Same idea as group 2, but wallets that look linked (same swap, same bundle or same signer) are merged into one cluster first. Share of the supply held by the largest 50 holder(s) after merging.
+  known_at_migration: unverified
+  why: Built from the coin's own transactions, but wallets are merged into clusters using bundle and signer files that we do not have, so how those files were made cannot be checked.
+  watch: ''
+group4_top100_pct:
+  group: group4
+  meaning: Same idea as group 2, but wallets that look linked (same swap, same bundle or same signer) are merged into one cluster first. Share of the supply held by the largest 100 holder(s) after merging.
+  known_at_migration: unverified
+  why: Built from the coin's own transactions, but wallets are merged into clusters using bundle and signer files that we do not have, so how those files were made cannot be checked.
+  watch: ''
+group4_top10_to_top100:
+  group: group4
+  meaning: Same idea as group 2, but wallets that look linked (same swap, same bundle or same signer) are merged into one cluster first. Top-10 share divided by top-100 share after merging.
+  known_at_migration: unverified
+  why: Built from the coin's own transactions, but wallets are merged into clusters using bundle and signer files that we do not have, so how those files were made cannot be checked.
+  watch: ''
+group4_holder_num:
+  group: group4
+  meaning: Same idea as group 2, but wallets that look linked (same swap, same bundle or same signer) are merged into one cluster first. Holders with at least 1 token after merging.
+  known_at_migration: unverified
+  why: Built from the coin's own transactions, but wallets are merged into clusters using bundle and signer files that we do not have, so how those files were made cannot be checked.
+  watch: ''
+group4_buy_user_num:
+  group: group4
+  meaning: Same idea as group 2, but wallets that look linked (same swap, same bundle or same signer) are merged into one cluster first. Distinct buyers after merging.
+  known_at_migration: unverified
+  why: Built from the coin's own transactions, but wallets are merged into clusters using bundle and signer files that we do not have, so how those files were made cannot be checked.
+  watch: ''
+group4_sell_user_num:
+  group: group4
+  meaning: Same idea as group 2, but wallets that look linked (same swap, same bundle or same signer) are merged into one cluster first. Distinct sellers after merging.
+  known_at_migration: unverified
+  why: Built from the coin's own transactions, but wallets are merged into clusters using bundle and signer files that we do not have, so how those files were made cannot be checked.
+  watch: ''
+group4_early_top1_hold_pct:
+  group: group4
+  meaning: Same idea as group 2, but wallets that look linked (same swap, same bundle or same signer) are merged into one cluster first. Supply share held at migration by the first 1 buyer(s) and their clusters.
+  known_at_migration: unverified
+  why: Built from the coin's own transactions, but wallets are merged into clusters using bundle and signer files that we do not have, so how those files were made cannot be checked.
+  watch: ''
+group4_early_top1_initial_hold_pct:
+  group: group4
+  meaning: Same idea as group 2, but wallets that look linked (same swap, same bundle or same signer) are merged into one cluster first. Supply share the first 1 buyer(s) bought at first.
+  known_at_migration: unverified
+  why: Built from the coin's own transactions, but wallets are merged into clusters using bundle and signer files that we do not have, so how those files were made cannot be checked.
+  watch: ''
+group4_early_top1_hold_ratio:
+  group: group4
+  meaning: Same idea as group 2, but wallets that look linked (same swap, same bundle or same signer) are merged into one cluster first. Still-held share divided by first-purchase share for the first 1 buyer(s).
+  known_at_migration: unverified
+  why: Built from the coin's own transactions, but wallets are merged into clusters using bundle and signer files that we do not have, so how those files were made cannot be checked.
+  watch: ''
+group4_early_top5_hold_pct:
+  group: group4
+  meaning: Same idea as group 2, but wallets that look linked (same swap, same bundle or same signer) are merged into one cluster first. Supply share held at migration by the first 5 buyer(s) and their clusters.
+  known_at_migration: unverified
+  why: Built from the coin's own transactions, but wallets are merged into clusters using bundle and signer files that we do not have, so how those files were made cannot be checked.
+  watch: ''
+group4_early_top5_initial_hold_pct:
+  group: group4
+  meaning: Same idea as group 2, but wallets that look linked (same swap, same bundle or same signer) are merged into one cluster first. Supply share the first 5 buyer(s) bought at first.
+  known_at_migration: unverified
+  why: Built from the coin's own transactions, but wallets are merged into clusters using bundle and signer files that we do not have, so how those files were made cannot be checked.
+  watch: ''
+group4_early_top5_hold_ratio:
+  group: group4
+  meaning: Same idea as group 2, but wallets that look linked (same swap, same bundle or same signer) are merged into one cluster first. Still-held share divided by first-purchase share for the first 5 buyer(s).
+  known_at_migration: unverified
+  why: Built from the coin's own transactions, but wallets are merged into clusters using bundle and signer files that we do not have, so how those files were made cannot be checked.
+  watch: ''
+group4_early_top10_hold_pct:
+  group: group4
+  meaning: Same idea as group 2, but wallets that look linked (same swap, same bundle or same signer) are merged into one cluster first. Supply share held at migration by the first 10 buyer(s) and their clusters.
+  known_at_migration: unverified
+  why: Built from the coin's own transactions, but wallets are merged into clusters using bundle and signer files that we do not have, so how those files were made cannot be checked.
+  watch: ''
+group4_early_top10_initial_hold_pct:
+  group: group4
+  meaning: Same idea as group 2, but wallets that look linked (same swap, same bundle or same signer) are merged into one cluster first. Supply share the first 10 buyer(s) bought at first.
+  known_at_migration: unverified
+  why: Built from the coin's own transactions, but wallets are merged into clusters using bundle and signer files that we do not have, so how those files were made cannot be checked.
+  watch: ''
+group4_early_top10_hold_ratio:
+  group: group4
+  meaning: Same idea as group 2, but wallets that look linked (same swap, same bundle or same signer) are merged into one cluster first. Still-held share divided by first-purchase share for the first 10 buyer(s).
+  known_at_migration: unverified
+  why: Built from the coin's own transactions, but wallets are merged into clusters using bundle and signer files that we do not have, so how those files were made cannot be checked.
+  watch: ''
+group4_early_top20_hold_pct:
+  group: group4
+  meaning: Same idea as group 2, but wallets that look linked (same swap, same bundle or same signer) are merged into one cluster first. Supply share held at migration by the first 20 buyer(s) and their clusters.
+  known_at_migration: unverified
+  why: Built from the coin's own transactions, but wallets are merged into clusters using bundle and signer files that we do not have, so how those files were made cannot be checked.
+  watch: ''
+group4_early_top20_initial_hold_pct:
+  group: group4
+  meaning: Same idea as group 2, but wallets that look linked (same swap, same bundle or same signer) are merged into one cluster first. Supply share the first 20 buyer(s) bought at first.
+  known_at_migration: unverified
+  why: Built from the coin's own transactions, but wallets are merged into clusters using bundle and signer files that we do not have, so how those files were made cannot be checked.
+  watch: ''
+group4_early_top20_hold_ratio:
+  group: group4
+  meaning: Same idea as group 2, but wallets that look linked (same swap, same bundle or same signer) are merged into one cluster first. Still-held share divided by first-purchase share for the first 20 buyer(s).
+  known_at_migration: unverified
+  why: Built from the coin's own transactions, but wallets are merged into clusters using bundle and signer files that we do not have, so how those files were made cannot be checked.
+  watch: ''
+group4_cluster_num:
+  group: group4
+  meaning: Number of wallet clusters found.
+  known_at_migration: unverified
+  why: Built from the coin's own transactions, but wallets are merged into clusters using bundle and signer files that we do not have, so how those files were made cannot be checked.
+  watch: 'zero_placeholder: 0 clusters is a real count but also means no links were found'
+group4_cluster_holder_num:
+  group: group4
+  meaning: Number of holding wallets that belong to a cluster.
+  known_at_migration: unverified
+  why: Built from the coin's own transactions, but wallets are merged into clusters using bundle and signer files that we do not have, so how those files were made cannot be checked.
+  watch: ''
+group4_cluster_holder_ratio:
+  group: group4
+  meaning: Clustered holding wallets as a share of all holding wallets.
+  known_at_migration: unverified
+  why: Built from the coin's own transactions, but wallets are merged into clusters using bundle and signer files that we do not have, so how those files were made cannot be checked.
+  watch: ''
+group4_cluster_total_pct:
+  group: group4
+  meaning: Total supply share held by all clusters.
+  known_at_migration: unverified
+  why: Built from the coin's own transactions, but wallets are merged into clusters using bundle and signer files that we do not have, so how those files were made cannot be checked.
+  watch: 'zero_placeholder: the code turns a missing value into 0 when there are no clusters'
+group4_cluster_avg_pct:
+  group: group4
+  meaning: Average supply share per cluster.
+  known_at_migration: unverified
+  why: Built from the coin's own transactions, but wallets are merged into clusters using bundle and signer files that we do not have, so how those files were made cannot be checked.
+  watch: 'zero_placeholder: the code turns a missing value into 0 when there are no clusters'
+group4_cluster_max_pct:
+  group: group4
+  meaning: Supply share of the largest cluster.
+  known_at_migration: unverified
+  why: Built from the coin's own transactions, but wallets are merged into clusters using bundle and signer files that we do not have, so how those files were made cannot be checked.
+  watch: 'zero_placeholder: the code turns a missing value into 0 when there are no clusters'
+group4_top1_pct_delta:
+  group: group4
+  meaning: Group 4 top-1 share minus group 2 top-1 share (how much merging wallets changes the picture).
+  known_at_migration: unverified
+  why: Built from the coin's own transactions, but wallets are merged into clusters using bundle and signer files that we do not have, so how those files were made cannot be checked.
+  watch: ''
+group4_top5_pct_delta:
+  group: group4
+  meaning: Group 4 top-5 share minus group 2 top-5 share (how much merging wallets changes the picture).
+  known_at_migration: unverified
+  why: Built from the coin's own transactions, but wallets are merged into clusters using bundle and signer files that we do not have, so how those files were made cannot be checked.
+  watch: ''
+group4_top10_pct_delta:
+  group: group4
+  meaning: Group 4 top-10 share minus group 2 top-10 share (how much merging wallets changes the picture).
+  known_at_migration: unverified
+  why: Built from the coin's own transactions, but wallets are merged into clusters using bundle and signer files that we do not have, so how those files were made cannot be checked.
+  watch: ''
+group4_top20_pct_delta:
+  group: group4
+  meaning: Group 4 top-20 share minus group 2 top-20 share (how much merging wallets changes the picture).
+  known_at_migration: unverified
+  why: Built from the coin's own transactions, but wallets are merged into clusters using bundle and signer files that we do not have, so how those files were made cannot be checked.
+  watch: ''
+group4_top50_pct_delta:
+  group: group4
+  meaning: Group 4 top-50 share minus group 2 top-50 share (how much merging wallets changes the picture).
+  known_at_migration: unverified
+  why: Built from the coin's own transactions, but wallets are merged into clusters using bundle and signer files that we do not have, so how those files were made cannot be checked.
+  watch: ''
+group4_top100_pct_delta:
+  group: group4
+  meaning: Group 4 top-100 share minus group 2 top-100 share (how much merging wallets changes the picture).
+  known_at_migration: unverified
+  why: Built from the coin's own transactions, but wallets are merged into clusters using bundle and signer files that we do not have, so how those files were made cannot be checked.
+  watch: ''

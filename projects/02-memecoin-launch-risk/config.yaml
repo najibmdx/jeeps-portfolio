@@ -46,6 +46,16 @@ data:
     url: https://raw.githubusercontent.com/git-disl/MELT/master/data/label/label.csv
   prepared_folder: prepared   # inside data/. Holds the three piles. Never committed.
 
+audit:
+  # The leakage audit reads the TRAIN pile only. Validation and test are never opened by it.
+  outputs_folder: outputs      # inside the project folder. Never committed.
+  bins: 10                     # a column with more distinct values than this is cut into this many equal-sized bands
+  min_bin_size: 30             # a band smaller than this is too small to trust and is ignored
+  zero_share_flag: 0.5         # flag a column if more than this share of coins have exactly 0
+  alone_auc_flag: 0.85         # flag a column that on its own ranks crashes this well (or this badly: 1 - value)
+  clock_corr_flag: 0.5         # flag a column whose rank moves with migration time at least this strongly
+  period_days: 7               # length of a time block when showing how the crash share drifts
+
 credit:
   dataset: "MELT: A Behavioral Trace Dataset for High-Risk Memecoin Launch Detection (arXiv 2602.13480)"
   repository: "https://github.com/git-disl/MELT"
