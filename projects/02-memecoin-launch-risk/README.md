@@ -227,10 +227,9 @@ The wobble covers sampling noise inside the test pile. It does not cover change 
 - `model_note.md`: how the model was trained, evaluated, tuned and chosen, for a data scientist.
 - `recommendation.md`: one page for a non-technical reader.
 - `learning_log.md`: what was learned.
-- `prompt_chat_history.md`: the raw AI chat history.
 
 ## AI tools used
 
-- Claude (Anthropic) was used as a trainer and code assistant. It wrote the code, the tests and this README, working from my instructions and reading my results. I ran everything on my machine, made my own commits, branches and pull requests, and wrote `decision_log.md`, `model_note.md`, `recommendation.md` and `learning_log.md` in my own words.
+- Claude (Anthropic) was used as a trainer and code assistant. It wrote the code, the tests and this README, working from my instructions and reading my results. I ran everything on my machine and made my own commits, branches and pull requests. `decision_log.md`, `model_note.md`, `recommendation.md` and `learning_log.md` were drafted with Claude from my project outputs and reviewed by me.
 - An automated GitHub reviewer (the OpenAI Codex connector, `chatgpt-codex-connector`) may post a review summary on a pull request. Where it did, each finding was checked against the code.
-- The full chat history is in `prompt_chat_history.md`.
+- The raw chat history is not included in this project.
