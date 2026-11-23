@@ -170,6 +170,16 @@ def test_report_counts_agree_with_each_other(made_up, config):
     assert report["crash_before_filter"] == int((labels["min_ratio"].iloc[:293] < 0.3).sum())
 
 
+def test_report_percentages_are_plain_floats_so_they_print_cleanly(made_up, config):
+    """numpy floats print as np.float64(61.8) inside a list; the report must hold ordinary floats."""
+    rows, labels = made_up
+    _, report = prepare.build_parts(rows, labels, config)
+    numbers = [report["crash_share_before_filter_percent"], report["crash_share_after_filter_percent"],
+               *report["crash_share_percent"]]
+    assert all(type(x) is float for x in numbers)
+    assert "float64" not in repr(report["crash_share_percent"])
+
+
 def test_every_kept_coin_passes_the_filter(made_up, config):
     rows, labels = made_up
     parts, _ = prepare.build_parts(rows, labels, config)
