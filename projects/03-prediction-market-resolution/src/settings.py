@@ -15,6 +15,12 @@ REQUIRED_EXCLUDED = ("close_time", "events.volume", "events.open_interest", "eve
 KNOWN_BASELINES = ("raw_price", "price_only_correction", "base_rate")
 KNOWN_MODELS = ("lr_price_only", "lr_all_features", "random_forest", "gradient_boosting")
 KNOWN_AT_T = ("yes", "assumed", "no", "unverified")
+# Stage 7: what can be tuned, the library default of each setting (the grid must hold it), how the setting is typed,
+# and the direction a grid is listed in so that "the first of equals wins a tie" means "the simpler setting wins".
+TUNABLE = {"lr_all_features": ("C",), "random_forest": ("min_samples_leaf",), "gradient_boosting": ("learning_rate", "min_samples_leaf")}
+LIBRARY_DEFAULTS = {"lr_all_features": {"C": 1.0}, "random_forest": {"min_samples_leaf": 1}, "gradient_boosting": {"learning_rate": 0.1, "min_samples_leaf": 20}}
+PARAM_TYPES = {"C": float, "learning_rate": float, "min_samples_leaf": int}
+GRID_DIRECTION = {"C": "ascending", "learning_rate": "ascending", "min_samples_leaf": "descending"}
 _SHA256 = re.compile(r"^[0-9a-f]{64}$")
 
 
@@ -129,8 +135,52 @@ def validate_config(config: dict) -> dict:
     odds = models["log_odds_columns"]
     if not isinstance(odds, list) or any(c not in used for c in odds) or len(odds) != len(set(odds)):
         raise ValueError("models.log_odds_columns must be a list of features, each once")
+    _validate_tuning(config)
     _validate_leakage(config)
     return config
+
+
+def _is_number(x) -> bool:
+    return isinstance(x, (int, float)) and not isinstance(x, bool)
+
+
+def _validate_tuning(config: dict) -> None:
+    """Stage 7 grids: one per tunable model of the ladder, the same number of settings for each, each holding the library default."""
+    models = config["models"]
+    tuning = models["tuning"]
+    wanted = [m for m in models["ladder"] if m in TUNABLE]
+    if not isinstance(tuning, dict) or set(tuning) != set(wanted):
+        raise ValueError(f"models.tuning must have a grid for exactly these models of the ladder: {wanted}")
+    sizes = {}
+    for name in wanted:
+        grid = tuning[name]
+        if not isinstance(grid, dict) or set(grid) != set(TUNABLE[name]):
+            raise ValueError(f"models.tuning.{name} must list exactly these settings: {list(TUNABLE[name])}")
+        size = 1
+        for param in TUNABLE[name]:
+            values = grid[param]
+            where = f"models.tuning.{name}.{param}"
+            if not isinstance(values, list) or not values:
+                raise ValueError(f"{where} must be a non-empty list")
+            if any(not _is_number(v) for v in values):
+                raise ValueError(f"{where} must hold numbers only")
+            if param == "min_samples_leaf" and any(not isinstance(v, int) or v < 1 for v in values):
+                raise ValueError(f"{where} must hold whole numbers, at least 1")
+            if param == "C" and any(v <= 0 for v in values):
+                raise ValueError(f"{where} must hold numbers above 0")
+            if param == "learning_rate" and any(not 0 < v <= 1 for v in values):
+                raise ValueError(f"{where} must hold numbers above 0 and at most 1")
+            ordered = sorted(values, reverse=GRID_DIRECTION[param] == "descending")
+            if values != ordered or len(set(values)) != len(values):
+                raise ValueError(f"{where} must be listed {GRID_DIRECTION[param]}, each value once: the first of equals wins a tie, so the simplest setting comes first")
+            if LIBRARY_DEFAULTS[name][param] not in values:
+                raise ValueError(f"{where} must include the library default {LIBRARY_DEFAULTS[name][param]}, so tuning cannot come out worse than untuned")
+            size *= len(values)
+        sizes[name] = size
+    if len(set(sizes.values())) > 1:
+        raise ValueError(f"models.tuning: every model gets the same number of settings, got {sizes}")
+    if sizes and next(iter(sizes.values())) < 2:
+        raise ValueError("models.tuning: each model needs at least 2 settings, or there is nothing to tune")
 
 
 def _validate_leakage(config: dict) -> None:

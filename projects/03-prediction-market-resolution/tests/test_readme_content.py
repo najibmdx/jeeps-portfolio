@@ -18,4 +18,5 @@ def test_no_promises():
 
 
 def test_readme_status_matches_the_stage():
-    assert "Stage 6" in README and "no final results to report" in README and "untuned model ladder scored on validation" in README and "python src/models.py" in README
+    assert "Stage 7" in README and "no final results to report" in README and "untuned model ladder" in README and "python src/models.py" in README
+    assert "python src/tune.py" in README and "python src/freeze.py" in README and "frozen_choice.yaml" in README

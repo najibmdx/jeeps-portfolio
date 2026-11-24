@@ -1,6 +1,6 @@
 # Settings for project 03 (Prediction Market Resolution). Change these instead of editing the code.
 # Learning project. No claim about trading use, returns or profit.
-# Every number here is a decision made in the design record (24 Nov 2026). Nothing is tuned yet.
+# Every number here is a decision made in the design record (24 Nov 2026). The only tuning is the small grids under models.tuning (Stage 7).
 
 question:
   # The label: does the Yes side of a market win?
@@ -176,6 +176,16 @@ models:
   log_odds_columns: [last_close, first_open, high, low, mean_close]
   frozen_file: frozen_choice.yaml   # in the project folder. Committed BEFORE the test split is opened.
   test_lock_file: test_opened.lock  # inside data/. Written the moment the test split is opened.
+  # Stage 7: light tuning on validation. Same budget for every model: 6 settings each. Each grid holds the library
+  # default (C 1, leaf 1 for the forest, learning rate 0.1 with leaf 20 for boosting), so tuning cannot come out worse
+  # than untuned on validation. lr_price_only has nothing to tune. forest_trees stays as set above.
+  # Grids are listed from the SIMPLEST setting to the most flexible, and the first of equals wins a tie:
+  #   C and learning_rate ascending (stronger regularisation, slower learning first), min_samples_leaf descending (bigger leaves first).
+  # Several settings per model (boosting): the first value of the first setting changes slowest, as listed below.
+  tuning:
+    lr_all_features: {C: [0.001, 0.01, 0.1, 1.0, 10.0, 100.0]}
+    random_forest: {min_samples_leaf: [200, 100, 50, 20, 5, 1]}
+    gradient_boosting: {learning_rate: [0.03, 0.1], min_samples_leaf: [400, 100, 20]}
 
 evaluation:
   outputs_folder: outputs

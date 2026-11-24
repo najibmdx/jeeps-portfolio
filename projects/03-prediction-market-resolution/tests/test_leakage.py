@@ -320,7 +320,7 @@ def test_pipeline_prints_the_audit_on_made_up_data(capsys):
     assert pipeline.main(["--sample"]) == 0
     out = capsys.readouterr().out
     assert "Leakage audit (train only:" in out and "screen 4, train versus validation" in out and "0 problems" in out
-    assert "Stage 6:" in out
+    assert "Stage 7:" in out
 
 
 def test_main_needs_the_validation_split_too(tmp_path, capsys, monkeypatch):

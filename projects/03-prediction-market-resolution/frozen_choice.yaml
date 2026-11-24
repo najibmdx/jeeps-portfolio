@@ -1,0 +1,51 @@
+# The model chosen on validation (Stage 7). Written by src/freeze.py from outputs/tuning_k7.json.
+# Committed BEFORE the test split is opened. It holds no test number: the test split has not been read.
+# The validation score of the winner is slightly flattering: it was picked on those markets. The one-time test is the honest number.
+frozen_on: '2026-11-25'
+k: 7
+model: lr_all_features
+params:
+  C: 1.0
+fixed_settings:
+  seed: 42
+  logistic_max_iter: 1000
+fitted_on: train only (no refit on train + validation, so the test measures exactly
+  this model)
+train_markets: 23897
+validation_markets: 7374
+inputs:
+- last_close
+- first_open
+- high
+- low
+- mean_close
+- change_first_to_last
+- n_bars
+- days_since_last_bar
+- trades_before_t
+- trades_last_bar
+- category
+- sibling_count_at_t
+validation:
+  log_loss_all: 0.1533170241754834
+  log_loss_contested: 0.4722416039805505
+runner_up:
+  model: lr_price_only
+  params: {}
+  log_loss_all: 0.15341683955053448
+  log_loss_contested: 0.4718017270786072
+margin_runner_up_minus_winner_all:
+  point: 9.981537505107663e-05
+  low: -0.0006180314570517584
+  high: 0.0007064779695264085
+  verdict: cannot be told apart
+winner_minus_raw_price_all:
+  point: 0.00020878570789364947
+  low: -0.00028246758946798983
+  high: 0.0008016437992488368
+  verdict: cannot be told apart
+tie_at_4_decimals: false
+rule: lowest validation log loss on all markets, compared at 4 decimals; the range
+  is shown, never used to decide
+tuning_report: outputs/tuning_k7.json
+test_split: not opened
