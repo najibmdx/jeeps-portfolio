@@ -97,6 +97,48 @@ dataset:
   #   sibling_count_at_t = markets of the same event (this one included) that opened on or before t
   #   event_key = event_id, or the market's own id when event_id is missing (9 markets)
 
+leakage:
+  # Stage 4 screens, run on the TRAIN part only. A flag is a finding to discuss. Nothing is dropped automatically.
+  # Screen 1: a group of train markets whose outcome never varies (all Yes or all No) is flagged, but only if the
+  # group is big enough to mean something. The event minimum matters because one huge event can be 50 markets.
+  min_markets_in_segment: 50
+  min_events_in_segment: 10
+  # Screen 2: a numeric feature whose rank correlation with t is at least this (up or down) is flagged as clock-like.
+  clock_like_correlation: 0.5
+  # Upper ends of the sibling-count groups: 1, 2 to 5, 6 to 15, 16 and more (the groups of the design record).
+  sibling_bucket_edges: [1, 5, 15]
+  # Screen 3 is not recomputed here: it needs bars after t, which the dataset does not hold. It is cited from
+  # audit_expected.final_bar_predicts_outcome, which audit.py reproduced on real data in Stage 1.
+
+# Every column of the built dataset, and every field that is kept out, with its source and a "known at t" decision.
+#   known_at_t: "yes" (known at t), "assumed" (believed fixed from opening, not verified), "no" (describes the future
+#   or is the outcome), "unverified" (timing could not be checked). Quoted on purpose: YAML reads a bare yes or no
+#   as true or false. A model input must be "yes" or "assumed". role: feature, meta, held_back or excluded.
+leakage_table:
+  market_id: {role: meta, source: "markets.market_id", known_at_t: "yes", reason: "Row identifier. Never a model input."}
+  event_key: {role: meta, source: "markets.event_id, or the market's own id when it has none", known_at_t: "yes", reason: "Groups the markets of one event for the split and for the wobble. Never a model input."}
+  t: {role: meta, source: "derived: markets.market_start_time cut to midnight UTC, plus k days", known_at_t: "yes", reason: "The decision time itself. Never a model input: it is a clock."}
+  open_time: {role: meta, source: "markets.market_start_time", known_at_t: "yes", reason: "Known once the market opens. Kept to build t and the sibling count. Never a model input: it is a clock."}
+  close_time: {role: excluded, source: "markets.close_time", known_at_t: "no", reason: "Looks like the realized end of the market (after expiration_time in 78% of binary markets). Kept in the table only for the open-at-t check and the purge. Never a model input."}
+  expiration_time: {role: held_back, source: "markets.expiration_time", known_at_t: "unverified", reason: "Looks scheduled (96.6% exactly on the hour) but may have been edited after the market opened. Tested once as a labelled ablation, never in the main model."}
+  label: {role: meta, source: "predictions.winner on the Yes token", known_at_t: "no", reason: "The outcome being forecast."}
+  last_close: {role: feature, source: "ohlcv_1d.close of the last Yes-token daily bar dated before t", known_at_t: "yes", reason: "Bars strictly before t only."}
+  first_open: {role: feature, source: "ohlcv_1d.open of the first Yes-token daily bar", known_at_t: "yes", reason: "Bars strictly before t only."}
+  high: {role: feature, source: "highest ohlcv_1d.high over those bars", known_at_t: "yes", reason: "Bars strictly before t only."}
+  low: {role: feature, source: "lowest ohlcv_1d.low over those bars", known_at_t: "yes", reason: "Bars strictly before t only."}
+  mean_close: {role: feature, source: "mean of ohlcv_1d.close over those bars", known_at_t: "yes", reason: "Bars strictly before t only."}
+  change_first_to_last: {role: feature, source: "derived: last_close minus first_open", known_at_t: "yes", reason: "Built from two features that are known at t."}
+  n_bars: {role: feature, source: "number of those bars", known_at_t: "yes", reason: "Bars strictly before t only."}
+  days_since_last_bar: {role: feature, source: "derived: whole days from the last bar's date to t", known_at_t: "yes", reason: "Uses only the last bar before t and t itself."}
+  trades_before_t: {role: feature, source: "sum of ohlcv_1d.trade_count over those bars", known_at_t: "yes", reason: "Bars strictly before t only."}
+  trades_last_bar: {role: feature, source: "ohlcv_1d.trade_count of the last bar before t", known_at_t: "yes", reason: "Bars strictly before t only."}
+  category: {role: feature, source: "markets.category", known_at_t: "assumed", reason: "From the authors' classifier. Assumed fixed from the market's opening. Not verified."}
+  sibling_count_at_t: {role: feature, source: "derived from markets.market_start_time of the markets of the same event", known_at_t: "yes", reason: "Counts only markets opened on or before t. Taken from open times, never from events.n_questions."}
+  has_fee: {role: feature, source: "markets.has_fee", known_at_t: "assumed", reason: "A market attribute, assumed fixed from the market's opening. Not verified."}
+  events.volume: {role: excluded, source: "events.volume", known_at_t: "no", reason: "Excluded for good in the design record: it describes the market's future, not its first days."}
+  events.open_interest: {role: excluded, source: "events.open_interest", known_at_t: "no", reason: "Excluded for good in the design record: it describes the market's future, not its first days."}
+  events.n_questions: {role: excluded, source: "events.n_questions", known_at_t: "no", reason: "Counts markets that were added to the event after t, so it holds the future."}
+
 baselines:
   # The market price is already a good forecast, so it is the thing to beat.
   - raw_price                     # the last close before t, used as the probability of Yes

@@ -1,4 +1,4 @@
-"""Entry point: check the settings and the data layout, build the dataset, split it. Nothing is modelled yet.
+"""Entry point: check the settings and the data layout, build the dataset, split it, audit the train part for leakage. Nothing is modelled yet.
 
     python src/pipeline.py --sample          # made-up data, no download
     python src/pipeline.py --data-dir DIR    # real files in DIR (default: ./data)
@@ -12,6 +12,7 @@ from pathlib import Path
 import pyarrow.parquet as pq
 
 import build
+import leakage
 import schema
 import settings
 import split
@@ -71,9 +72,16 @@ def main(argv=None) -> int:
         split.write_splits(table, data_dir, config, k)
         print("\n".join(split.summary_lines(report)))
 
+        # The leakage audit sees the train rows only: the same rows that were written to the train file.
+        train = table[(table["split"] == "train") & ~table["purged"]].drop(columns=split.HELPERS)
+        audit_report = leakage.audit(train, config)
+        print("\n".join(leakage.summary_lines(audit_report, config)))
+        if audit_report["problems"]:
+            return 1
+
     if any(config["data"]["files"][t]["sha256"] is None for t in settings.TABLES):
         print("Note: file fingerprints (sha256) are not recorded yet. Stage 1 records them.")
-    print("Stage 3: the dataset is built and split. The model steps do not exist yet.")
+    print("Stage 4: the dataset is built, split and checked for leakage. The model steps do not exist yet.")
     print("The test split was not opened by this run.")
     return 0
 
