@@ -1,0 +1,101 @@
+# Settings for project 03 (Prediction Market Resolution). Change these instead of editing the code.
+# Learning project. No claim about trading use, returns or profit.
+# Every number here is a decision made in the design record (24 Nov 2026). Nothing is tuned yet.
+
+question:
+  # The label: does the Yes side of a market win?
+  label_table: predictions
+  label_column: winner            # read on the Yes token
+  # Where markets.outcome_yes is filled in, it must agree with the label above.
+  cross_check: {table: markets, column: outcome_yes}
+  outcomes: ["Yes", "No"]           # only markets with exactly these two outcomes
+  n_outcomes: 2                   # and exactly one winning token
+
+decision_time:
+  # t = the market's opening date (cut to midnight UTC) + this many days.
+  days_after_open: 7              # main run
+  robustness_days_after_open: 3   # the same pipeline rerun, validation numbers only
+  # A market only counts if it is still open at t. close_time is used for THIS check and nowhere else.
+  # It looks like the realized end of the market, so it is never a feature.
+  must_be_open_at_t: true
+  bars_strictly_before_t: true    # daily bars dated on or after t are never used
+
+universe:
+  min_trades_before_t: 20         # a trade count, not volume: the volume unit is unconfirmed
+  # The contested slice: last close before t between these two lines. Reported next to "all markets".
+  contested_low: 0.05
+  contested_high: 0.95
+
+split:
+  # Order markets by t, oldest first. Oldest share is train, next is validation, newest is test.
+  order_by: t
+  train: 0.6
+  validation: 0.2
+  test: 0.2                       # opened once
+  # Markets whose outcome was not yet known when the next period starts are purged from train and validation.
+  purge_unknown_labels: true
+  # An event goes wholly to the split of its earliest market.
+  events_whole: true
+
+seed: 42   # fixed so that every run gives the same numbers
+
+data:
+  source: https://huggingface.co/datasets/vgregoire/polymarket-users
+  licence: "CC-BY-4.0 for the authors' processing. Fields that come from the Polymarket API stay under Polymarket's terms."
+  citation: "Akey, P., Gregoire, V., Harvie, N., and Martineau, C. (2026). Who Wins and Who Loses In Prediction Markets? Evidence from Polymarket. Working paper."
+  # Expected file sizes were read from the Hugging Face file listing and from the downloaded files.
+  # sha256 is recorded in Stage 1, when the files are downloaded on Jeeps's machine. null = not recorded yet.
+  files:
+    events:
+      file: events.parquet
+      bytes: 7581274
+      sha256: null
+      url: https://huggingface.co/datasets/vgregoire/polymarket-users/resolve/main/events.parquet
+    markets:
+      file: markets.parquet
+      bytes: 22591844
+      sha256: null
+      url: https://huggingface.co/datasets/vgregoire/polymarket-users/resolve/main/markets.parquet
+    predictions:
+      file: predictions.parquet
+      bytes: 119721790
+      sha256: null
+      url: https://huggingface.co/datasets/vgregoire/polymarket-users/resolve/main/predictions.parquet
+    ohlcv_1d:
+      file: ohlcv_1d.parquet
+      bytes: 161540522
+      sha256: null
+      url: https://huggingface.co/datasets/vgregoire/polymarket-users/resolve/main/ohlcv_1d.parquet
+
+features:
+  # All of these are built from daily bars strictly before t.
+  price_path: [last_close, first_open, high, low, mean_close, change_first_to_last, n_bars, days_since_last_bar]
+  activity: [trades_before_t, trades_last_bar]
+  # sibling_count_at_t counts markets of the same event opened on or before t. It is derived from open times,
+  # never taken from events.n_questions (that field includes markets added later).
+  context: [category, sibling_count_at_t, has_fee]
+  # Timing could not be verified. Tested once as a labelled ablation, never in the main model.
+  held_back: [expiration_time]
+  # Never allowed: they describe the future of the market (or hold it).
+  excluded: [close_time, events.volume, events.open_interest, events.n_questions]
+
+baselines:
+  # The market price is already a good forecast, so it is the thing to beat.
+  - raw_price                     # the last close before t, used as the probability of Yes
+  - price_only_correction         # a tiny model on the price alone, fitted on train
+  - base_rate                     # the share of Yes in train, for every market
+
+metrics:
+  decides: log_loss               # lower is better
+  also: [brier, calibration_table]
+  slices: [all, contested]
+
+models:
+  # A ladder: each step adds one thing.
+  ladder: [lr_price_only, lr_all_features, random_forest, gradient_boosting]
+  selection: lowest_validation_log_loss
+  frozen_file: frozen_choice.yaml   # in the project folder. Committed BEFORE the test split is opened.
+  test_lock_file: test_opened.lock  # inside data/. Written the moment the test split is opened.
+
+evaluation:
+  outputs_folder: outputs
