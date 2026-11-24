@@ -80,6 +80,21 @@ features:
   # Never allowed: they describe the future of the market (or hold it).
   excluded: [close_time, events.volume, events.open_interest, events.n_questions]
 
+dataset:
+  # The built table: one row per market in the universe. Written to <data folder>/derived/. Never committed.
+  folder: derived
+  file: dataset_k{k}.parquet
+  # Columns that identify the row or are needed later for splitting and purging. Never model inputs.
+  # expiration_time sits here only because it is held back for one labelled ablation (Stage 8).
+  meta: [market_id, event_key, t, open_time, close_time, expiration_time, label]
+  # Definitions, for the record:
+  #   last_close / first_open / high / low / mean_close: Yes-token daily bars dated strictly before t
+  #   change_first_to_last = last_close - first_open;  n_bars = number of such bars
+  #   days_since_last_bar = whole days from the last such bar's date to t
+  #   trades_before_t = sum of trade_count over those bars;  trades_last_bar = trade_count of the last one
+  #   sibling_count_at_t = markets of the same event (this one included) that opened on or before t
+  #   event_key = event_id, or the market's own id when event_id is missing (9 markets)
+
 baselines:
   # The market price is already a good forecast, so it is the thing to beat.
   - raw_price                     # the last close before t, used as the probability of Yes

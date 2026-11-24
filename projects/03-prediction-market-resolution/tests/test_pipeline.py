@@ -40,3 +40,9 @@ def test_gitignore_keeps_data_and_outputs_out():
     text = (settings.PROJECT_DIR / ".gitignore").read_text()
     for line in ("data/", "outputs/", ".venv/"):
         assert line in text.splitlines()
+
+
+def test_sample_run_builds_the_dataset(capsys):
+    assert pipeline.main(["--sample"]) == 0
+    out = capsys.readouterr().out
+    assert "Built the dataset for k=7" in out
