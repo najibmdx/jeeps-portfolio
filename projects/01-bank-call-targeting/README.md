@@ -172,6 +172,4 @@ One subscription is worth 1 unit and one call costs the amount shown. These cost
 
 ## AI tools used
 
-- Claude (Anthropic) was used as a trainer and code assistant. It wrote the code, the tests and this README, working from my instructions and reading my results. I ran everything, made my own commits, branches and pull requests, and wrote `decision_log.md`, `model_note.md`, `recommendation.md` and `learning_log.md` in my own words.
-- An automated GitHub reviewer (the OpenAI Codex connector, `chatgpt-codex-connector`) posts a review summary on each pull request.
-- The full chat history is in `prompt_chat_history.md`.
+- Claude (Anthropic) was used as a trainer and code assistant. It wrote the code, the tests and this README, working from my instructions and reading my results. I ran everything on my machine and made my own commits, branches and pull requests.
