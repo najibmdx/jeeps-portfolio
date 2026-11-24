@@ -18,4 +18,4 @@ def test_no_promises():
 
 
 def test_readme_status_matches_the_stage():
-    assert "Stage 3" in README and "there are no results" in README
+    assert "Stage 4" in README and "there are no results" in README

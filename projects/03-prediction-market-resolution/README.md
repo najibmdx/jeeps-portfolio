@@ -2,7 +2,7 @@
 
 Learning project. No claim about trading use, returns or profit.
 
-**Status: Stage 3 (dataset built and split by time). Nothing is modelled yet and there are no results.**
+**Status: Stage 4 (dataset built, split by time and checked for leakage). Nothing is modelled yet and there are no results.**
 
 ## The question
 
@@ -25,5 +25,7 @@ On real data, download the four files into `data/` (about 310 MB, each checked a
     python src/audit.py
 
 `pipeline.py` checks the layout, builds the dataset into `data/derived/`, then splits it by decision time into train, validation and test files in the same folder. Markets of one event stay together, and train and validation markets whose outcome was not yet known when the next period began are dropped. Nothing reads the test file.
+
+`python src/leakage.py` then prints the leakage audit on the train part only: a table of every column with its source and whether it is known at the decision time, and three screens (groups where the outcome never varies, features that move with the calendar, and the final-bar leak, cited from the audit). A flag is a finding to look at. Nothing is dropped automatically.
 
 Tests: `python -m pytest -q`

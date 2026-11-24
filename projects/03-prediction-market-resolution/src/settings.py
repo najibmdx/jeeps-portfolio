@@ -14,6 +14,7 @@ TABLES = ("events", "markets", "predictions", "ohlcv_1d")
 REQUIRED_EXCLUDED = ("close_time", "events.volume", "events.open_interest", "events.n_questions")
 KNOWN_BASELINES = ("raw_price", "price_only_correction", "base_rate")
 KNOWN_MODELS = ("lr_price_only", "lr_all_features", "random_forest", "gradient_boosting")
+KNOWN_AT_T = ("yes", "assumed", "no", "unverified")
 _SHA256 = re.compile(r"^[0-9a-f]{64}$")
 
 
@@ -102,7 +103,48 @@ def validate_config(config: dict) -> dict:
         raise ValueError(f"models.ladder must be a non-empty list drawn from {list(KNOWN_MODELS)}")
     if models["selection"] != "lowest_validation_log_loss":
         raise ValueError("models.selection must be lowest_validation_log_loss (the only rule that is built)")
+    _validate_leakage(config)
     return config
+
+
+def _validate_leakage(config: dict) -> None:
+    """The leakage settings and the table that says, for every column, whether it is known at t."""
+    lk = config["leakage"]
+    for key in ("min_markets_in_segment", "min_events_in_segment"):
+        if not isinstance(lk[key], int) or isinstance(lk[key], bool) or lk[key] < 1:
+            raise ValueError(f"leakage.{key} must be a whole number, at least 1")
+    if not isinstance(lk["clock_like_correlation"], (int, float)) or not 0 < lk["clock_like_correlation"] <= 1:
+        raise ValueError("leakage.clock_like_correlation must be above 0 and at most 1")
+    edges = lk["sibling_bucket_edges"]
+    if not edges or any(not isinstance(e, int) or isinstance(e, bool) or e < 1 for e in edges) or edges != sorted(set(edges)):
+        raise ValueError("leakage.sibling_bucket_edges must be whole numbers from 1, strictly increasing")
+
+    f = config["features"]
+    features = list(f["price_path"]) + list(f["activity"]) + list(f["context"])
+    role_of = {name: "meta" for name in config["dataset"]["meta"]}
+    role_of.update({name: "excluded" for name in f["excluded"]})
+    role_of.update({name: "held_back" for name in f["held_back"]})
+    role_of.update({name: "feature" for name in features})
+
+    table = config["leakage_table"]
+    missing = [n for n in role_of if n not in table]
+    if missing:
+        raise ValueError(f"leakage_table has no row for: {missing}")
+    extra = [n for n in table if n not in role_of]
+    if extra:
+        raise ValueError(f"leakage_table has rows for names nothing uses: {extra}")
+    for name, row in table.items():
+        if set(row) != {"role", "source", "known_at_t", "reason"}:
+            raise ValueError(f"leakage_table.{name} must have exactly role, source, known_at_t and reason")
+        if row["role"] != role_of[name]:
+            raise ValueError(f"leakage_table.{name}: role is {row['role']}, the other settings make it {role_of[name]}")
+        if row["known_at_t"] not in KNOWN_AT_T:
+            raise ValueError(f"leakage_table.{name}.known_at_t must be one of {list(KNOWN_AT_T)} (as text), got {row['known_at_t']!r}")
+        if not str(row["source"]).strip() or not str(row["reason"]).strip():
+            raise ValueError(f"leakage_table.{name} needs a source and a reason")
+        allowed = {"feature": ("yes", "assumed"), "held_back": ("unverified",), "excluded": ("no",)}.get(row["role"])
+        if allowed and row["known_at_t"] not in allowed:
+            raise ValueError(f"leakage_table.{name}: a {row['role']} column must be {' or '.join(allowed)} at t, not {row['known_at_t']}")
 
 
 def load_config(path=None) -> dict:
