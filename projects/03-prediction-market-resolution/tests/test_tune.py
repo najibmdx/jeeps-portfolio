@@ -654,9 +654,13 @@ def test_pipeline_hands_the_tuning_train_and_validation_rows_only_and_freezes_no
     seen = {}
     real_run = tune.run
     monkeypatch.setattr(tune, "run", lambda tr, va, c: (seen.update(train=tr, validation=va), real_run(tr, va, c))[1])
+    frozen_path = settings.PROJECT_DIR / "frozen_choice.yaml"
     before = sorted(p.name for p in settings.PROJECT_DIR.iterdir())
+    frozen_before = frozen_path.read_bytes() if frozen_path.exists() else None
     assert pipeline.main(["--sample"]) == 0
-    assert sorted(p.name for p in settings.PROJECT_DIR.iterdir()) == before and not (settings.PROJECT_DIR / "frozen_choice.yaml").exists()
+    # The real frozen file is committed, so it may exist; the run must neither create nor change it.
+    assert sorted(p.name for p in settings.PROJECT_DIR.iterdir()) == before
+    assert (frozen_path.read_bytes() if frozen_path.exists() else None) == frozen_before
     data = sample.write_sample(tmp_path, seed=CONFIG["seed"])
     dataset, _ = build.build_dataset(data, CONFIG, 7)
     table_, _ = split.assign(dataset, CONFIG)

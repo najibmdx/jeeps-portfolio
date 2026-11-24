@@ -53,6 +53,10 @@ def make_frozen(report, config, k, today) -> dict:
         raise ValueError("the report's winning settings are not in the grid of config.yaml; run src/tune.py again")
     if report["seed"] != config["seed"]:
         raise ValueError("the report was made with a different seed from config.yaml; run src/tune.py again")
+    now = fixed_settings(c["winner"], config)
+    for key in ("forest_trees", "logistic_max_iter"):
+        if key in now and report.get(key) != now[key]:
+            raise ValueError(f"the report was made with {key} = {report.get(key)} but config.yaml now says {now[key]}; run src/tune.py again")
     return {
         "frozen_on": today, "k": k, "model": c["winner"], "params": dict(c["params"]), "fixed_settings": fixed_settings(c["winner"], config),
         "fitted_on": FITTED_ON, "train_markets": report["train_markets"], "validation_markets": report["validation_markets"], "inputs": list(report["inputs"]),

@@ -241,3 +241,49 @@ def test_freezing_never_reads_the_data_folder_for_anything_but_the_lock_file(pro
     tmp_path, _ = project
     (tmp_path / "data" / "train_k7.parquet").write_text("not a parquet file", encoding="utf-8")
     assert run_freeze(tmp_path) == 0
+
+
+def _report_for(report, winner):
+    """The report with another model as the winner (its first grid setting), to test the fixed-settings check per model."""
+    r = copy.deepcopy(report)
+    r["choice"]["winner"] = winner
+    r["choice"]["params"] = tune.grid_settings(CONFIG, winner)[0]
+    return r
+
+
+@pytest.mark.parametrize(
+    "winner,key,value",
+    [("random_forest", "forest_trees", 500), ("lr_all_features", "logistic_max_iter", 2000)],
+)
+def test_a_changed_fixed_setting_of_the_winner_is_refused(project, winner, key, value):
+    _, report = project
+    r = _report_for(report, winner)
+    r[key] = value  # the report was made with another value than config.yaml now says
+    with pytest.raises(ValueError, match=f"{key} = {value} but config.yaml now says {CONFIG['models'][key]}; run src/tune.py again"):
+        freeze.make_frozen(r, CONFIG, 7, TODAY)
+
+
+@pytest.mark.parametrize(
+    "winner,irrelevant",
+    [("random_forest", "logistic_max_iter"), ("lr_all_features", "forest_trees"), ("gradient_boosting", "forest_trees"), ("lr_price_only", "logistic_max_iter")],
+)
+def test_a_setting_the_winner_does_not_use_does_not_matter(project, winner, irrelevant):
+    _, report = project
+    r = _report_for(report, winner)
+    r[irrelevant] = 12345
+    assert freeze.make_frozen(r, CONFIG, 7, TODAY)["model"] == winner
+
+
+@pytest.mark.parametrize("winner", ["random_forest", "lr_all_features", "gradient_boosting", "lr_price_only"])
+def test_a_report_that_matches_the_config_freezes_for_every_model(project, winner):
+    _, report = project
+    assert freeze.make_frozen(_report_for(report, winner), CONFIG, 7, TODAY)["fixed_settings"] == freeze.fixed_settings(winner, CONFIG)
+
+
+@pytest.mark.parametrize("winner,key", [("random_forest", "forest_trees"), ("lr_all_features", "logistic_max_iter")])
+def test_a_report_without_the_fixed_setting_is_refused(project, winner, key):
+    _, report = project
+    r = _report_for(report, winner)
+    r.pop(key)
+    with pytest.raises(ValueError, match="run src/tune.py again"):
+        freeze.make_frozen(r, CONFIG, 7, TODAY)
