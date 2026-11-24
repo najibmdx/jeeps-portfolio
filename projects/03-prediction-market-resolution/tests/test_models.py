@@ -351,9 +351,15 @@ def test_bad_model_settings_are_refused(bad):
 
 
 def test_values_on_the_edge_of_the_allowed_range_are_accepted():
-    for path, value in [(("models", "forest_trees"), 1), (("models", "logistic_max_iter"), 1), (("models", "dropped_features"), {}),
-                        (("models", "log_odds_columns"), []), (("models", "dropped_features"), {c: "x" for c in INPUTS})]:
+    for path, value in [(("models", "forest_trees"), 1), (("models", "logistic_max_iter"), 1), (("models", "log_odds_columns"), [])]:
         settings.validate_config(_bad(path, value))
+    # Changing the model inputs also changes what the Stage 8 ablation block must list (it must cover every input).
+    c = _bad(("models", "dropped_features"), {})
+    c["ablation"]["groups"]["context"].append("has_fee")
+    c["ablation"]["rows"]["all_columns"].append("has_fee")
+    settings.validate_config(c)
+    with pytest.raises(ValueError, match="must cover exactly the model inputs"):
+        settings.validate_config(_bad(("models", "dropped_features"), {}))        # has_fee is an input again, but the ablation block does not list it
 
 
 # ---- closing gaps found by the break-it run

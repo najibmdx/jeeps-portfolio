@@ -2,7 +2,7 @@
 
 Learning project. No claim about trading use, returns or profit.
 
-**Status: Stage 7 (dataset built, split by time, checked for leakage and shift; three baselines and an untuned model ladder scored on validation; the ladder tuned lightly and one model chosen on validation). The chosen model is written to `frozen_choice.yaml` before the test split is opened. The test split has not been read and there are no final results to report.**
+**Status: Stage 8 (dataset built, split by time, checked for leakage and shift; three baselines and an untuned model ladder scored on validation; the ladder tuned lightly and one model chosen on validation; the chosen model checked with column groups left out). The chosen model is written to `frozen_choice.yaml` before the test split is opened. The test split has not been read and there are no final results to report.**
 
 ## The question
 
@@ -35,5 +35,7 @@ On real data, download the four files into `data/` (about 310 MB, each checked a
 `python src/tune.py` tunes the ladder lightly. Each tunable model gets the same budget of 6 settings (the regularisation strength of the logistic regression, the leaf size of the forest, the learning rate and leaf size of boosting), and every grid includes the library default, so the best setting cannot be worse than the untuned model on validation. Every setting is fitted on train and scored on validation, for all markets and for the contested slice, next to its train score. The choice is the lowest validation log loss on all markets, compared at 4 decimals; a tie goes to the simpler setting, then to the earlier model in the ladder. The winner's margin over the runner-up is shown next to its wobble, and the wobble never decides. Only the four ladder models can win; the raw price is shown beside them as the yardstick. The chosen model stays fitted on train only. Its validation score is slightly flattering, because it was picked on those markets; the one-time test is the honest number. The test file is never read.
 
 `python src/freeze.py` then writes `frozen_choice.yaml` (model, settings, seed, validation scores, margin over the runner-up, date) from that report. It holds no test number, it is committed before the test split is opened, and it refuses to overwrite an existing choice or to run after the test has been opened.
+
+`python src/ablate.py` asks which groups of columns the frozen model needs. It takes the model and settings from `frozen_choice.yaml` and refits it on train with some columns left out: the price path alone, the price path plus the activity columns, plus the category, plus the sibling count, everything except the sibling count, and everything. Nothing is retuned, so the rows differ only in their columns. Each row is compared with the price-only correction and with the others in pairs, on the same resampled validation sets, and the full row must reproduce the validation score written in `frozen_choice.yaml` or the run stops. It scores validation only, never reads the test file, and cannot change the frozen choice. The sibling count rises over time, so a gain from it could partly be the calendar.
 
 Tests: `python -m pytest -q`
