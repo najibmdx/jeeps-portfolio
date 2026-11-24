@@ -21,7 +21,9 @@ On made-up data (no download needed):
 On real data, download the four files into `data/` (about 310 MB, each checked against a size and sha256), check the layout, then audit them against the numbers in `config.yaml`:
 
     python src/download.py
-    python src/pipeline.py      (checks the layout, then builds the dataset into data/derived/)
+    python src/pipeline.py
     python src/audit.py
+
+`pipeline.py` checks the layout, then builds the dataset into `data/derived/`.
 
 Tests: `python -m pytest -q`
