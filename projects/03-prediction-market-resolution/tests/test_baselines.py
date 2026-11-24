@@ -294,7 +294,7 @@ def test_main_reports_a_problem_in_plain_words(tmp_path, capsys, monkeypatch):
 def test_pipeline_runs_the_baselines_on_made_up_data(capsys):
     assert pipeline.main(["--sample"]) == 0
     out = capsys.readouterr().out
-    assert "Baselines on validation (" in out and "Stage 5:" in out and "The test split was not opened by this run." in out
+    assert "Baselines on validation (" in out and "Stage 6:" in out and "The test split was not opened by this run." in out
 
 
 def _bad(path, value):

@@ -1,4 +1,4 @@
-"""Entry point: check the settings and the data layout, build the dataset, split it, audit for leakage and train-versus-validation shift, score the baselines on validation. Nothing is modelled yet.
+"""Entry point: check the settings and the data layout, build the dataset, split it, audit for leakage and train-versus-validation shift, score the baselines and the untuned model ladder. Nothing is modelled yet.
 
     python src/pipeline.py --sample          # made-up data, no download
     python src/pipeline.py --data-dir DIR    # real files in DIR (default: ./data)
@@ -14,6 +14,7 @@ import pyarrow.parquet as pq
 import baselines
 import build
 import leakage
+import models
 import schema
 import settings
 import split
@@ -88,9 +89,17 @@ def main(argv=None) -> int:
             return 1
         print("\n".join(baselines.summary_lines(baseline_report)))
 
+        # The untuned models are fitted on the train rows and scored on train and validation. Test is not passed in.
+        try:
+            model_report = models.run(kept("train"), kept("validation"), config)
+        except ValueError as e:
+            print(f"PROBLEM models: {e}")
+            return 1
+        print("\n".join(models.summary_lines(model_report)))
+
     if any(config["data"]["files"][t]["sha256"] is None for t in settings.TABLES):
         print("Note: file fingerprints (sha256) are not recorded yet. Stage 1 records them.")
-    print("Stage 5: the dataset is built, split, checked for leakage and shift, and the baselines are scored on validation. The models do not exist yet.")
+    print("Stage 6: the dataset is built, split, checked for leakage and shift, and the baselines and the untuned model ladder are scored. Nothing is tuned or chosen yet.")
     print("The test split was not opened by this run.")
     return 0
 

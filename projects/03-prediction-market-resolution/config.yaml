@@ -166,6 +166,14 @@ models:
   # A ladder: each step adds one thing.
   ladder: [lr_price_only, lr_all_features, random_forest, gradient_boosting]
   selection: lowest_validation_log_loss
+  # Stage 6: untuned. Library defaults and the seed above, except these two settings.
+  forest_trees: 300
+  logistic_max_iter: 1000
+  # Model inputs left out, with the reason. They stay in leakage_table. Decided with Jeeps on 24 Nov 2026.
+  dropped_features:
+    has_fee: "True for 6 of 23,897 train markets and about none of validation, so nothing can be learned or tuned; the 1,349 fee markets of the universe are in the test period."
+  # The logistic regression sees these price levels as log-odds, so it starts from the same input as the price-only rung.
+  log_odds_columns: [last_close, first_open, high, low, mean_close]
   frozen_file: frozen_choice.yaml   # in the project folder. Committed BEFORE the test split is opened.
   test_lock_file: test_opened.lock  # inside data/. Written the moment the test split is opened.
 

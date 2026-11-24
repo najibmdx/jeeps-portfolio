@@ -115,6 +115,20 @@ def validate_config(config: dict) -> dict:
         raise ValueError(f"models.ladder must be a non-empty list drawn from {list(KNOWN_MODELS)}")
     if models["selection"] != "lowest_validation_log_loss":
         raise ValueError("models.selection must be lowest_validation_log_loss (the only rule that is built)")
+    for key in ("forest_trees", "logistic_max_iter"):
+        if not isinstance(models[key], int) or isinstance(models[key], bool) or models[key] < 1:
+            raise ValueError(f"models.{key} must be a whole number, at least 1")
+    dropped = models["dropped_features"]
+    if not isinstance(dropped, dict) or any(not str(why).strip() for why in dropped.values()):
+        raise ValueError("models.dropped_features must map each dropped feature to a reason")
+    unknown = [c for c in dropped if c not in used]
+    if unknown:
+        raise ValueError(f"models.dropped_features names columns that are not features: {unknown}")
+    if len(dropped) >= len(used):
+        raise ValueError("models.dropped_features leaves no model input")
+    odds = models["log_odds_columns"]
+    if not isinstance(odds, list) or any(c not in used for c in odds) or len(odds) != len(set(odds)):
+        raise ValueError("models.log_odds_columns must be a list of features, each once")
     _validate_leakage(config)
     return config
 
