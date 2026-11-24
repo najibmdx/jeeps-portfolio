@@ -187,6 +187,44 @@ models:
     random_forest: {min_samples_leaf: [200, 100, 50, 20, 5, 1]}
     gradient_boosting: {learning_rate: [0.03, 0.1], min_samples_leaf: [400, 100, 20]}
 
+# Stage 8: column-group ablations. Validation only; the test split is never read. The model is the FROZEN choice
+# (frozen_choice.yaml): same model, same settings in every row, refitted on train on a subset of the columns. Nothing is
+# retuned (retuning per row would measure tuning effort, not columns), and nothing here can change the frozen choice.
+ablation:
+  # The model inputs in three groups. Every input (has_fee is dropped, see models.dropped_features) sits in exactly one.
+  groups:
+    price_path: [last_close, first_open, high, low, mean_close, change_first_to_last]
+    activity: [n_bars, days_since_last_bar, trades_before_t, trades_last_bar]
+    context: [category, sibling_count_at_t]
+  # The rows, in the order printed. Each is a list of model inputs. The row all_columns is the frozen model itself and
+  # must reproduce its validation score in frozen_choice.yaml (the run stops if it does not). Every row keeps the price path.
+  rows:
+    price_path_only: [last_close, first_open, high, low, mean_close, change_first_to_last]
+    price_path_plus_activity: [last_close, first_open, high, low, mean_close, change_first_to_last, n_bars, days_since_last_bar, trades_before_t, trades_last_bar]
+    price_path_plus_category: [last_close, first_open, high, low, mean_close, change_first_to_last, category]
+    price_path_plus_sibling_count: [last_close, first_open, high, low, mean_close, change_first_to_last, sibling_count_at_t]
+    all_minus_sibling_count: [last_close, first_open, high, low, mean_close, change_first_to_last, n_bars, days_since_last_bar, trades_before_t, trades_last_bar, category]
+    all_columns: [last_close, first_open, high, low, mean_close, change_first_to_last, n_bars, days_since_last_bar, trades_before_t, trades_last_bar, category, sibling_count_at_t]
+  # Paired differences, A minus B (negative = A has the lower log loss). lr_price_only is the Stage 5 price correction.
+  # The sibling-count answers: price_path_plus_sibling_count minus price_path_only, and all_columns minus all_minus_sibling_count.
+  pairs:
+    - [price_path_only, lr_price_only]
+    - [price_path_plus_activity, lr_price_only]
+    - [price_path_plus_category, lr_price_only]
+    - [price_path_plus_sibling_count, lr_price_only]
+    - [all_minus_sibling_count, lr_price_only]
+    - [all_columns, lr_price_only]
+    - [price_path_only, all_columns]
+    - [price_path_plus_activity, all_columns]
+    - [price_path_plus_category, all_columns]
+    - [price_path_plus_sibling_count, all_columns]
+    - [price_path_plus_activity, price_path_only]
+    - [price_path_plus_category, price_path_only]
+    - [price_path_plus_sibling_count, price_path_only]
+    - [all_columns, all_minus_sibling_count]
+  # If the frozen all_columns score is not reproduced to this many log-loss units, the run stops.
+  reproduce_tolerance: 1.0e-7
+
 evaluation:
   outputs_folder: outputs
   # The wobble: re-draw the validation set this many times by resampling whole events, show the middle share of the results.

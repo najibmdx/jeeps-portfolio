@@ -136,6 +136,7 @@ def validate_config(config: dict) -> dict:
     if not isinstance(odds, list) or any(c not in used for c in odds) or len(odds) != len(set(odds)):
         raise ValueError("models.log_odds_columns must be a list of features, each once")
     _validate_tuning(config)
+    _validate_ablation(config)
     _validate_leakage(config)
     return config
 
@@ -181,6 +182,45 @@ def _validate_tuning(config: dict) -> None:
         raise ValueError(f"models.tuning: every model gets the same number of settings, got {sizes}")
     if sizes and next(iter(sizes.values())) < 2:
         raise ValueError("models.tuning: each model needs at least 2 settings, or there is nothing to tune")
+
+
+def _validate_ablation(config: dict) -> None:
+    """Stage 8: the column groups cover every model input once, every row is a list of inputs, every pair names two scored forecasts."""
+    f, models = config["features"], config["models"]
+    inputs = [c for c in list(f["price_path"]) + list(f["activity"]) + list(f["context"]) if c not in models["dropped_features"]]
+    a = config["ablation"]
+    groups = a["groups"]
+    if not isinstance(groups, dict) or not groups or any(not isinstance(v, list) or not v for v in groups.values()):
+        raise ValueError("ablation.groups must map each group to a non-empty list of columns")
+    seen = [c for v in groups.values() for c in v]
+    if len(seen) != len(set(seen)):
+        raise ValueError("ablation.groups: a column sits in two groups")
+    if set(seen) != set(inputs):
+        raise ValueError(f"ablation.groups must cover exactly the model inputs {inputs}, each once")
+    rows = a["rows"]
+    if not isinstance(rows, dict) or "all_columns" not in rows:
+        raise ValueError("ablation.rows must be a table of rows and must include all_columns (the frozen model)")
+    for name, cols in rows.items():
+        if name in ("raw_price", "lr_price_only"):
+            raise ValueError(f"ablation.rows.{name}: that name is taken by a yardstick")
+        if not isinstance(cols, list) or not cols or len(cols) != len(set(cols)) or any(c not in inputs for c in cols):
+            raise ValueError(f"ablation.rows.{name} must be a non-empty list of model inputs, each once")
+        if not any(c in cols for c in groups.get("price_path", [])):
+            raise ValueError(f"ablation.rows.{name} must keep at least one price column")
+    if rows["all_columns"] != inputs:
+        raise ValueError("ablation.rows.all_columns must list every model input, in the order of config.yaml features: it is the frozen model")
+    known = set(rows) | {"lr_price_only"}
+    pairs = a["pairs"]
+    if not isinstance(pairs, list) or not pairs:
+        raise ValueError("ablation.pairs must be a non-empty list of [A, B]")
+    for p in pairs:
+        if not isinstance(p, list) or len(p) != 2 or p[0] == p[1] or any(x not in known for x in p):
+            raise ValueError(f"ablation.pairs: {p} must name two different rows (or lr_price_only)")
+    if len({tuple(p) for p in pairs}) != len(pairs):
+        raise ValueError("ablation.pairs: a pair is listed twice")
+    tol = a["reproduce_tolerance"]
+    if not _is_number(tol) or not 0 < tol <= 0.001:
+        raise ValueError("ablation.reproduce_tolerance must be a small number above 0 (at most 0.001)")
 
 
 def _validate_leakage(config: dict) -> None:
