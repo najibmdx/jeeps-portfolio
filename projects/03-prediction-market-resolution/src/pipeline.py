@@ -1,4 +1,4 @@
-"""Entry point: check the settings and the data layout, then build the dataset. Nothing is modelled yet.
+"""Entry point: check the settings and the data layout, build the dataset, split it. Nothing is modelled yet.
 
     python src/pipeline.py --sample          # made-up data, no download
     python src/pipeline.py --data-dir DIR    # real files in DIR (default: ./data)
@@ -14,6 +14,7 @@ import pyarrow.parquet as pq
 import build
 import schema
 import settings
+import split
 from sample import write_sample
 
 
@@ -66,9 +67,13 @@ def main(argv=None) -> int:
         print(f"Built the dataset for k={k}: " + ", ".join(f"{name} {n:,}" for name, n in funnel.items()))
         print(f"Dataset: {len(dataset):,} rows, written to {path.name} (not committed).")
 
+        table, report = split.assign(dataset, config)
+        split.write_splits(table, data_dir, config, k)
+        print("\n".join(split.summary_lines(report)))
+
     if any(config["data"]["files"][t]["sha256"] is None for t in settings.TABLES):
         print("Note: file fingerprints (sha256) are not recorded yet. Stage 1 records them.")
-    print("Stage 2: the dataset is built. The split and model steps do not exist yet.")
+    print("Stage 3: the dataset is built and split. The model steps do not exist yet.")
     print("The test split was not opened by this run.")
     return 0
 

@@ -2,7 +2,7 @@
 
 Learning project. No claim about trading use, returns or profit.
 
-**Status: Stage 2 (dataset built). Nothing is modelled yet and there are no results.**
+**Status: Stage 3 (dataset built and split by time). Nothing is modelled yet and there are no results.**
 
 ## The question
 
@@ -24,6 +24,6 @@ On real data, download the four files into `data/` (about 310 MB, each checked a
     python src/pipeline.py
     python src/audit.py
 
-`pipeline.py` checks the layout, then builds the dataset into `data/derived/`.
+`pipeline.py` checks the layout, builds the dataset into `data/derived/`, then splits it by decision time into train, validation and test files in the same folder. Markets of one event stay together, and train and validation markets whose outcome was not yet known when the next period began are dropped. Nothing reads the test file.
 
 Tests: `python -m pytest -q`
