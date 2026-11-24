@@ -34,3 +34,9 @@ def test_wrong_layout_gives_exit_1(tmp_path, capsys):
     shutil.copy(tmp_path / "markets.parquet", tmp_path / "events.parquet")
     assert pipeline.main(["--data-dir", str(tmp_path)]) == 1
     assert "PROBLEM events" in capsys.readouterr().out
+
+
+def test_gitignore_keeps_data_and_outputs_out():
+    text = (settings.PROJECT_DIR / ".gitignore").read_text()
+    for line in ("data/", "outputs/", ".venv/"):
+        assert line in text.splitlines()

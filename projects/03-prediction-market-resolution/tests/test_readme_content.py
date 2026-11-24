@@ -15,3 +15,7 @@ def test_no_promises():
     low = README.lower()
     for phrase in ("profitable", "guaranteed", "make money", "beat the market", "alpha"):
         assert phrase not in low
+
+
+def test_readme_status_matches_the_stage():
+    assert "Stage 1" in README and "there are no results" in README
