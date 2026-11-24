@@ -209,6 +209,25 @@ def score_slice(validation, fc, mask, weights, codes, n_events, interval, names=
     return result
 
 
+def paired_difference(validation, p_a, p_b, mask, weights, codes, n_events, interval, metric="log_loss") -> dict:
+    """Forecast A minus forecast B in one score (lower is better), with the paired wobble: both are scored on the same re-drawn sets of whole events.
+
+    Returns point, low, high and a verdict about A against B ("better" if the whole range is below 0, "worse" if above, else "cannot be told apart")."""
+    if metric not in METRICS:
+        raise ValueError(f"metric must be one of {METRICS}")
+    if int(mask.sum()) == 0:
+        raise ValueError("no markets in this slice")
+    score = {"log_loss": log_loss, "brier": brier}[metric]
+    y = validation["label"].to_numpy(dtype="float64")[mask]
+    a, b = np.asarray(p_a, dtype="float64")[mask], np.asarray(p_b, dtype="float64")[mask]
+    counts = np.bincount(codes[mask], minlength=n_events).astype("float64")
+    draws = [weighted_scores(weights, np.bincount(codes[mask], weights=_loss_each(metric, y, p), minlength=n_events), counts) for p in (a, b)]
+    r = _range(draws[0] - draws[1], interval)
+    r["point"] = score(y, a) - score(y, b)
+    r["verdict"] = verdict(r["low"], r["high"])
+    return r
+
+
 def run(train, validation, config) -> dict:
     """Fit on train, score on validation. Needs nothing but the train and validation rows."""
     for part, df in (("train", train), ("validation", validation)):

@@ -308,7 +308,7 @@ def test_pipeline_hands_the_models_train_and_validation_rows_only(monkeypatch, c
     assert set(seen["validation"]["market_id"]) == expect("validation")
     assert not set(seen["validation"]["market_id"]) & expect("test")
     out = capsys.readouterr().out
-    assert "Model ladder, untuned" in out and "Stage 6:" in out and "The test split was not opened by this run." in out
+    assert "Model ladder, untuned" in out and "Stage 7:" in out and "The test split was not opened by this run." in out
 
 
 def test_the_pipeline_stops_with_a_plain_message_when_the_models_cannot_run(monkeypatch, capsys):

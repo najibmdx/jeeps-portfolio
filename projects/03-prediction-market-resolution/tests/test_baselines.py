@@ -294,7 +294,7 @@ def test_main_reports_a_problem_in_plain_words(tmp_path, capsys, monkeypatch):
 def test_pipeline_runs_the_baselines_on_made_up_data(capsys):
     assert pipeline.main(["--sample"]) == 0
     out = capsys.readouterr().out
-    assert "Baselines on validation (" in out and "Stage 6:" in out and "The test split was not opened by this run." in out
+    assert "Baselines on validation (" in out and "Stage 7:" in out and "The test split was not opened by this run." in out
 
 
 def _bad(path, value):
@@ -396,3 +396,77 @@ def test_the_pipeline_stops_with_a_plain_message_when_the_baselines_cannot_run(m
     monkeypatch.setattr(baselines, "run", boom)
     assert pipeline.main(["--sample"]) == 1
     assert "PROBLEM baselines: no spread in the prices" in capsys.readouterr().out
+
+
+# ---- Stage 7: the paired difference between two forecasts
+
+def _pair_table():
+    """4 markets, 2 events of 2. Forecast A is informative, forecast B says 0.5 everywhere. Three hand-made re-draws of the 2 events."""
+    val = pd.DataFrame({"label": [1, 0, 1, 0], "event_key": ["a", "a", "b", "b"]})
+    codes, uniques = pd.factorize(val["event_key"])
+    weights = np.array([[1.0, 1.0], [2.0, 0.0], [0.0, 2.0]])
+    return val, codes, len(uniques), weights, np.array([0.8, 0.3, 0.6, 0.1]), np.full(4, 0.5)
+
+
+def test_paired_difference_log_loss_known_answer():
+    val, codes, n, weights, pa, pb = _pair_table()
+    mask = np.ones(4, dtype=bool)
+    # Losses of A: -ln 0.8, -ln 0.7 | -ln 0.6, -ln 0.9, so the event sums are 0.579818 and 0.616186. B costs ln 2 = 0.693147 per market.
+    # Re-draws (a, b), (a, a), (b, b) give A scores 0.299001, 0.289909, 0.308093. Interval 1 gives the whole spread.
+    r = baselines.paired_difference(val, pa, pb, mask, weights, codes, n, 1.0)
+    assert r["point"] == pytest.approx(-0.394146, abs=1e-5)
+    assert r["low"] == pytest.approx(-0.403238, abs=1e-5) and r["high"] == pytest.approx(-0.385054, abs=1e-5)
+    assert r["verdict"] == "better"
+    swapped = baselines.paired_difference(val, pb, pa, mask, weights, codes, n, 1.0)
+    assert (swapped["point"], swapped["low"], swapped["high"]) == pytest.approx((0.394146, 0.385054, 0.403238), abs=1e-5)
+    assert swapped["verdict"] == "worse"
+    same = baselines.paired_difference(val, pa, pa, mask, weights, codes, n, 1.0)
+    assert (same["point"], same["low"], same["high"]) == (0.0, 0.0, 0.0) and same["verdict"] == "cannot be told apart"
+
+
+def test_paired_difference_brier_known_answer():
+    val, codes, n, weights, pa, pb = _pair_table()
+    r = baselines.paired_difference(val, pa, pb, np.ones(4, dtype=bool), weights, codes, n, 1.0, metric="brier")
+    # A: squared errors 0.04, 0.09, 0.16, 0.01, mean 0.075. B: 0.25 everywhere. The re-draws of A score 0.075, 0.065, 0.085.
+    assert r["point"] == pytest.approx(-0.175) and r["low"] == pytest.approx(-0.185) and r["high"] == pytest.approx(-0.165) and r["verdict"] == "better"
+
+
+def test_paired_difference_uses_the_slice_only_and_skips_a_re_draw_that_misses_the_slice():
+    val, codes, n, weights, pa, pb = _pair_table()
+    mask = np.array([True, True, False, False])         # event a only; the third re-draw has no event a and is left out
+    r = baselines.paired_difference(val, pa, pb, mask, weights, codes, n, 1.0)
+    expect = (-math.log(0.8) - math.log(0.7)) / 2 - math.log(2)
+    assert r["point"] == pytest.approx(expect) and r["low"] == pytest.approx(expect) and r["high"] == pytest.approx(expect)
+
+
+def test_paired_difference_range_is_the_configured_middle_share():
+    val, codes, n, _, pa, pb = _pair_table()
+    weights = baselines.resample_weights(n, 400, 3)
+    all_ = np.ones(4, dtype=bool)
+    full = baselines.paired_difference(val, pa, pb, all_, weights, codes, n, 1.0)
+    mid = baselines.paired_difference(val, pa, pb, all_, weights, codes, n, 0.5)
+    assert full["low"] < mid["low"] <= mid["high"] < full["high"] and mid["point"] == full["point"]
+
+
+def test_paired_difference_refuses_an_empty_slice_and_an_unknown_score():
+    val, codes, n, weights, pa, pb = _pair_table()
+    with pytest.raises(ValueError, match="no markets"):
+        baselines.paired_difference(val, pa, pb, np.zeros(4, dtype=bool), weights, codes, n, 0.9)
+    with pytest.raises(ValueError, match="metric"):
+        baselines.paired_difference(val, pa, pb, np.ones(4, dtype=bool), weights, codes, n, 0.9, metric="accuracy")
+
+
+def test_paired_difference_against_the_raw_price_agrees_with_score_slice():
+    rng = np.random.default_rng(5)
+    n = 60
+    price = rng.uniform(0.05, 0.95, n)
+    val = table(price, (rng.random(n) < price).astype(int), [f"E{i // 3}" for i in range(n)])
+    other = baselines.clip_probability(np.clip(price + rng.normal(0, 0.1, n), 0.01, 0.99), EPS)
+    raw = baselines.clip_probability(price, EPS)
+    codes, uniques = pd.factorize(val["event_key"])
+    weights = baselines.resample_weights(len(uniques), 50, 1)
+    mask = baselines.slice_masks(val, CONFIG)["contested"]
+    s = baselines.score_slice(val, {"raw_price": raw, "other": other}, mask, weights, codes, len(uniques), 0.9, names=["raw_price", "other"])
+    d = baselines.paired_difference(val, other, raw, mask, weights, codes, len(uniques), 0.9)
+    expect = s["difference_vs_raw_price"]["other"]["log_loss"]
+    assert (d["point"], d["low"], d["high"], d["verdict"]) == (expect["point"], expect["low"], expect["high"], expect["verdict"])

@@ -1,4 +1,4 @@
-"""Entry point: check the settings and the data layout, build the dataset, split it, audit for leakage and train-versus-validation shift, score the baselines and the untuned model ladder. Nothing is modelled yet.
+"""Entry point: check the settings and the data layout, build the dataset, split it, audit for leakage and train-versus-validation shift, score the baselines and the untuned model ladder, then tune the ladder lightly on validation and show the choice. Nothing is frozen here.
 
     python src/pipeline.py --sample          # made-up data, no download
     python src/pipeline.py --data-dir DIR    # real files in DIR (default: ./data)
@@ -18,6 +18,7 @@ import models
 import schema
 import settings
 import split
+import tune
 from sample import write_sample
 
 
@@ -97,9 +98,18 @@ def main(argv=None) -> int:
             return 1
         print("\n".join(models.summary_lines(model_report)))
 
+        # Light tuning: every setting is fitted on train and scored on validation, and one model is chosen. Test is not passed in.
+        # Nothing is written: frozen_choice.yaml comes from src/freeze.py, by hand, from the report of src/tune.py.
+        try:
+            tuning_report = tune.run(kept("train"), kept("validation"), config)
+        except ValueError as e:
+            print(f"PROBLEM tuning: {e}")
+            return 1
+        print("\n".join(tune.summary_lines(tuning_report)))
+
     if any(config["data"]["files"][t]["sha256"] is None for t in settings.TABLES):
         print("Note: file fingerprints (sha256) are not recorded yet. Stage 1 records them.")
-    print("Stage 6: the dataset is built, split, checked for leakage and shift, and the baselines and the untuned model ladder are scored. Nothing is tuned or chosen yet.")
+    print("Stage 7: the dataset is built, split, checked for leakage and shift, the baselines and the untuned model ladder are scored, and the ladder is tuned lightly and one model chosen on validation. Nothing is frozen by this run.")
     print("The test split was not opened by this run.")
     return 0
 

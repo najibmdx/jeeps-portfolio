@@ -2,7 +2,7 @@
 
 Learning project. No claim about trading use, returns or profit.
 
-**Status: Stage 6 (dataset built, split by time, checked for leakage and shift, three baselines and an untuned model ladder scored on validation). Nothing is tuned or chosen yet and there are no final results to report.**
+**Status: Stage 7 (dataset built, split by time, checked for leakage and shift; three baselines and an untuned model ladder scored on validation; the ladder tuned lightly and one model chosen on validation). The chosen model is written to `frozen_choice.yaml` before the test split is opened. The test split has not been read and there are no final results to report.**
 
 ## The question
 
@@ -31,5 +31,9 @@ On real data, download the four files into `data/` (about 310 MB, each checked a
 `python src/baselines.py` scores the three baselines on the validation part only: the raw price at the decision time taken as the probability of Yes, the same price passed through a two-number correction (intercept and slope on the log-odds) fitted on train, and the train Yes rate for every market. Log loss decides, Brier is shown beside it, for all markets and for the contested slice. Every forecast is clipped into 0.001 to 0.999 before scoring so that a price of exactly 0 or 1 cannot give an infinite score. A calibration table shows, for fixed price bands, how often markets really resolved Yes. The ranges come from re-drawing the validation set 200 times by resampling whole events; they show sampling noise only, not the change between periods. The test file is never read.
 
 `python src/models.py` fits the untuned model ladder on train and scores it on validation next to the baselines: the price-only correction, a logistic regression on all inputs, a random forest and a gradient-boosting model. Every model uses library defaults and seed 42 (only the forest size and the logistic iteration cap are set). The inputs are the market features known at the decision time, one-hot category and no `has_fee` (about none of the train and validation markets have a fee, so nothing can be learned from it). The report shows train and validation scores side by side so overfitting is visible, and compares every model with the raw price on the same resampled validation sets. Nothing is tuned and nothing is chosen at this stage. The test file is never read.
+
+`python src/tune.py` tunes the ladder lightly. Each tunable model gets the same budget of 6 settings (the regularisation strength of the logistic regression, the leaf size of the forest, the learning rate and leaf size of boosting), and every grid includes the library default, so the best setting cannot be worse than the untuned model on validation. Every setting is fitted on train and scored on validation, for all markets and for the contested slice, next to its train score. The choice is the lowest validation log loss on all markets, compared at 4 decimals; a tie goes to the simpler setting, then to the earlier model in the ladder. The winner's margin over the runner-up is shown next to its wobble, and the wobble never decides. Only the four ladder models can win; the raw price is shown beside them as the yardstick. The chosen model stays fitted on train only. Its validation score is slightly flattering, because it was picked on those markets; the one-time test is the honest number. The test file is never read.
+
+`python src/freeze.py` then writes `frozen_choice.yaml` (model, settings, seed, validation scores, margin over the runner-up, date) from that report. It holds no test number, it is committed before the test split is opened, and it refuses to overwrite an existing choice or to run after the test has been opened.
 
 Tests: `python -m pytest -q`

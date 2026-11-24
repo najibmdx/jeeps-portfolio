@@ -79,8 +79,14 @@ def _log_odds(x, eps):
     return np.log(x / (1 - x))
 
 
-def build_model(name, config, columns):
-    """One untuned model (a scikit-learn pipeline) for the ladder step `name`. lr_price_only is not built here."""
+def build_model(name, config, columns, params=None):
+    """One model (a scikit-learn pipeline) for the ladder step `name`. lr_price_only is not built here.
+
+    `params` sets the tunable settings of Stage 7 (see settings.TUNABLE); None or {} gives the untuned model of Stage 6."""
+    params = dict(params or {})
+    unknown = [p for p in params if p not in settings.TUNABLE.get(name, ())]
+    if unknown:
+        raise ValueError(f"{name} cannot tune {unknown}; it can tune {list(settings.TUNABLE.get(name, ()))}")
     eps, seed = config["metrics"]["price_clip"], config["seed"]
     numbers = [c for c in columns if c != CATEGORY]
     category = [c for c in columns if c == CATEGORY]
@@ -92,12 +98,12 @@ def build_model(name, config, columns):
             ("price_levels", Pipeline([("log_odds", FunctionTransformer(_log_odds, kw_args={"eps": eps}, feature_names_out="one-to-one")), ("scale", StandardScaler())]), odds),
             ("number", StandardScaler(), rest), one_hot,
         ])
-        return Pipeline([("prepare", pre), ("model", LogisticRegression(max_iter=config["models"]["logistic_max_iter"], random_state=seed))])
+        return Pipeline([("prepare", pre), ("model", LogisticRegression(max_iter=config["models"]["logistic_max_iter"], random_state=seed, **params))])
     pre = ColumnTransformer([("number", "passthrough", numbers), one_hot])
     if name == "random_forest":
-        return Pipeline([("prepare", pre), ("model", RandomForestClassifier(n_estimators=config["models"]["forest_trees"], random_state=seed, n_jobs=-1))])
+        return Pipeline([("prepare", pre), ("model", RandomForestClassifier(n_estimators=config["models"]["forest_trees"], random_state=seed, n_jobs=-1, **params))])
     if name == "gradient_boosting":
-        return Pipeline([("prepare", pre), ("model", HistGradientBoostingClassifier(random_state=seed))])
+        return Pipeline([("prepare", pre), ("model", HistGradientBoostingClassifier(random_state=seed, **params))])
     raise ValueError(f"no model is built for {name}")
 
 
