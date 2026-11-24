@@ -2,7 +2,7 @@
 
 Learning project. No claim about trading use, returns or profit.
 
-**Status: Stage 1 (download and audit). Nothing is modelled yet and there are no results.**
+**Status: Stage 2 (dataset built). Nothing is modelled yet and there are no results.**
 
 ## The question
 
@@ -23,5 +23,7 @@ On real data, download the four files into `data/` (about 310 MB, each checked a
     python src/download.py
     python src/pipeline.py
     python src/audit.py
+
+`pipeline.py` checks the layout, then builds the dataset into `data/derived/`.
 
 Tests: `python -m pytest -q`

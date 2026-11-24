@@ -73,6 +73,15 @@ def validate_config(config: dict) -> dict:
     if set(used) & set(f["held_back"]) or set(f["held_back"]) & set(f["excluded"]):
         raise ValueError("features: a held-back field cannot also be a feature or excluded")
 
+    d = config["dataset"]
+    if "{k}" not in d["file"]:
+        raise ValueError("dataset.file must contain {k} so the k=7 and k=3 tables never overwrite each other")
+    if set(d["meta"]) & set(used):
+        raise ValueError("dataset.meta: a column cannot be both a model input and a meta column")
+    for needed in ("market_id", "event_key", "t", "close_time", "label"):
+        if needed not in d["meta"]:
+            raise ValueError(f"dataset.meta must include {needed}")
+
     if list(config["baselines"]) != list(KNOWN_BASELINES):
         raise ValueError(f"baselines must be exactly {list(KNOWN_BASELINES)}")
 
