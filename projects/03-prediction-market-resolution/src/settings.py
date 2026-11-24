@@ -115,6 +115,10 @@ def _validate_leakage(config: dict) -> None:
             raise ValueError(f"leakage.{key} must be a whole number, at least 1")
     if not isinstance(lk["clock_like_correlation"], (int, float)) or not 0 < lk["clock_like_correlation"] <= 1:
         raise ValueError("leakage.clock_like_correlation must be above 0 and at most 1")
+    if not isinstance(lk["shift_number_difference"], (int, float)) or isinstance(lk["shift_number_difference"], bool) or lk["shift_number_difference"] <= 0:
+        raise ValueError("leakage.shift_number_difference must be a number above 0")
+    if not isinstance(lk["shift_share_change"], (int, float)) or isinstance(lk["shift_share_change"], bool) or not 0 < lk["shift_share_change"] <= 1:
+        raise ValueError("leakage.shift_share_change must be above 0 and at most 1")
     edges = lk["sibling_bucket_edges"]
     if not edges or any(not isinstance(e, int) or isinstance(e, bool) or e < 1 for e in edges) or edges != sorted(set(edges)):
         raise ValueError("leakage.sibling_bucket_edges must be whole numbers from 1, strictly increasing")

@@ -111,6 +111,10 @@ def _extra():
         _bad(("leakage", "min_events_in_segment"), 0),
         _bad(("leakage", "clock_like_correlation"), 0),
         _bad(("leakage", "clock_like_correlation"), 1.5),
+        _bad(("leakage", "shift_number_difference"), 0),
+        _bad(("leakage", "shift_number_difference"), True),
+        _bad(("leakage", "shift_share_change"), 0),
+        _bad(("leakage", "shift_share_change"), 1.5),
         _bad(("leakage", "sibling_bucket_edges"), [5, 1]),
         _bad(("leakage", "sibling_bucket_edges"), []),
         _bad(("leakage", "sibling_bucket_edges"), [0, 5]),
@@ -126,6 +130,8 @@ def test_values_on_the_edge_of_the_allowed_range_are_accepted():
         (("leakage", "min_markets_in_segment"), 1),
         (("leakage", "min_events_in_segment"), 1),
         (("leakage", "clock_like_correlation"), 1.0),
+        (("leakage", "shift_share_change"), 1.0),
+        (("leakage", "shift_number_difference"), 0.001),
         (("leakage", "sibling_bucket_edges"), [1]),
     ]:
         settings.validate_config(_bad(path, value))
@@ -258,18 +264,18 @@ def test_booleans_with_gaps_are_read_as_numbers_and_text_is_not():
 # ---- screen 3, the whole audit, and the train-only rule
 
 def test_screen_3_is_cited_not_recomputed():
-    report = leakage.audit(frame(10), CONFIG)
+    report = leakage.audit(frame(10), frame(10), CONFIG)
     assert report["final_bar_leak"]["value"] == CONFIG["audit_expected"]["final_bar_predicts_outcome"] == 0.9895
     assert "not recomputed" in report["final_bar_leak"]["note"]
 
 
 def test_audit_needs_the_columns_the_screens_read():
     with pytest.raises(ValueError, match="category"):
-        leakage.audit(frame(10).drop(columns=["category"]), CONFIG)
+        leakage.audit(frame(10).drop(columns=["category"]), frame(10), CONFIG)
 
 
 def test_summary_lines_show_flags_and_the_citation():
-    text = "\n".join(leakage.summary_lines(leakage.audit(_screen1_frame(), CONFIG), CONFIG))
+    text = "\n".join(leakage.summary_lines(leakage.audit(_screen1_frame(), frame(10), CONFIG), CONFIG))
     assert "FLAG category = A: 60 markets, 12 events, 0% Yes" in text
     assert "FLAG category = E: 50 markets, 10 events, 100% Yes" in text
     assert "98.95% (cited from audit.py, not recomputed here)" in text
@@ -284,16 +290,16 @@ def _split_dir(tmp_path):
     return tmp_path / "data"
 
 
-def test_main_reads_the_train_split_only(tmp_path, capsys, monkeypatch):
+def test_main_reads_train_and_validation_but_never_test(tmp_path, capsys, monkeypatch):
     data_dir = _split_dir(tmp_path)
     monkeypatch.setattr(settings, "PROJECT_DIR", tmp_path)  # the report goes to tmp_path/outputs
     asked, real = [], split.read_split
     monkeypatch.setattr(split, "read_split", lambda *a, **k: (asked.append(a[2]), real(*a, **k))[1])
     assert leakage.main(["--data-dir", str(data_dir)]) == 0
-    assert asked == ["train"]
+    assert asked == ["train", "validation"]  # never "test"
     assert (tmp_path / "outputs" / "leakage_audit_k7.json").exists()
     out = capsys.readouterr().out
-    assert "role" in out and "known at t" in out and "Validation and test were not read." in out
+    assert "role" in out and "known at t" in out and "Test was not read. Validation was read for its features only, not its outcomes." in out
 
 
 def test_main_exits_1_when_the_table_does_not_match_the_columns(tmp_path, capsys, monkeypatch):
@@ -313,5 +319,138 @@ def test_main_needs_the_split_files(tmp_path, capsys):
 def test_pipeline_prints_the_audit_on_made_up_data(capsys):
     assert pipeline.main(["--sample"]) == 0
     out = capsys.readouterr().out
-    assert "Leakage audit (train only:" in out and "0 problems" in out
+    assert "Leakage audit (train only:" in out and "screen 4, train versus validation" in out and "0 problems" in out
     assert "Stage 4:" in out
+
+
+def test_main_needs_the_validation_split_too(tmp_path, capsys, monkeypatch):
+    data_dir = _split_dir(tmp_path)
+    monkeypatch.setattr(settings, "PROJECT_DIR", tmp_path)
+    split.split_path(data_dir, CONFIG, "validation", 7).unlink()
+    assert leakage.main(["--data-dir", str(data_dir)]) == 2
+    assert "No validation split" in capsys.readouterr().out
+
+
+# ---- screen 4: train versus validation, features only
+
+def test_screen_4_numbers_are_measured_in_train_standard_deviations():
+    train = frame(4, last_close=[0.0, 1.0, 0.0, 1.0])      # mean 0.5, sample sd 0.57735...
+    sd = float(np.std([0, 1, 0, 1], ddof=1))
+    same = leakage.shift_rows(train, frame(4, last_close=0.5), CONFIG)
+    assert by(same, feature="last_close")["change"] == 0.0 and not by(same, feature="last_close")["flagged"]
+    moved = leakage.shift_rows(train, frame(4, last_close=0.5 + 0.4 * sd), CONFIG)
+    row = by(moved, feature="last_close")
+    assert row["change"] == pytest.approx(0.4) and not row["flagged"]
+    assert row["train"] == 0.5 and row["validation"] == pytest.approx(0.5 + 0.4 * sd)
+    for sign in (+1, -1):                                   # exactly on the line counts, either direction
+        edge = leakage.shift_rows(train, frame(4, last_close=0.5 + sign * 0.5 * sd), CONFIG)
+        assert by(edge, feature="last_close")["flagged"]
+        assert by(edge, feature="last_close")["change"] == pytest.approx(sign * 0.5)
+
+
+def test_screen_4_a_number_that_is_constant_on_train():
+    r = leakage.shift_rows(frame(4), frame(4, trades_last_bar=11), CONFIG)
+    row = by(r, feature="trades_last_bar")
+    assert row["flagged"] and row["change"] is None and "constant on train" in row["note"]
+    assert not by(r, feature="high")["flagged"]            # constant on both sides and equal
+
+
+def test_screen_4_yes_no_shares_are_compared_in_points():
+    train = frame(20, has_fee=[True] + [False] * 19)            # 5%
+    ok = leakage.shift_rows(train, frame(20, has_fee=[True] * 2 + [False] * 18), CONFIG)   # 10%: +5 points
+    assert not by(ok, feature="has_fee")["flagged"]
+    edge = leakage.shift_rows(train, frame(20, has_fee=[True] * 3 + [False] * 17), CONFIG)  # 15%: +10 points, on the line
+    row = by(edge, feature="has_fee")
+    assert row["flagged"] and row["change"] == pytest.approx(0.10) and row["train"] == 0.05 and row["validation"] == 0.15
+    down = leakage.shift_rows(frame(20, has_fee=[True] * 6 + [False] * 14), frame(20, has_fee=[False] * 20), CONFIG)
+    assert by(down, feature="has_fee")["flagged"] and by(down, feature="has_fee")["change"] == pytest.approx(-0.30)
+
+
+def test_screen_4_the_late_fee_flag_shows_up_as_a_shift():
+    train = frame(100, has_fee=[True] * 1 + [False] * 99)
+    validation = frame(100, has_fee=[True] * 40 + [False] * 60)
+    r = by(leakage.shift_rows(train, validation, CONFIG), feature="has_fee")
+    assert r["flagged"] and r["change"] == pytest.approx(0.39)
+
+
+def test_screen_4_category_uses_the_value_that_moved_most():
+    train = frame(10, category=["A"] * 5 + ["B"] * 5)
+    val = frame(10, category=["A"] * 2 + ["B"] * 5 + ["C"] * 3)
+    row = by(leakage.shift_rows(train, val, CONFIG), feature="category")
+    assert row["flagged"] and row["value"] in ("A", "C")
+    assert row["change"] in (pytest.approx(-0.3), pytest.approx(0.3))
+    assert row["note"] == "only in validation: C"
+    edge = by(leakage.shift_rows(train, frame(10, category=["A"] * 6 + ["B"] * 4), CONFIG), feature="category")
+    assert edge["flagged"] and abs(edge["change"]) == 0.1  # exactly 10 points counts, despite float error (0.6 - 0.5)
+    under = by(leakage.shift_rows(frame(20, category=["A"] * 10 + ["B"] * 10), frame(20, category=["A"] * 11 + ["B"] * 9), CONFIG), feature="category")
+    assert not under["flagged"] and abs(under["change"]) == 0.05
+    small = by(leakage.shift_rows(train, frame(10, category=["A"] * 5 + ["B"] * 5), CONFIG), feature="category")
+    assert not small["flagged"] and small["change"] == 0.0 and small["note"] is None
+
+
+def test_screen_4_a_missing_category_is_a_value_of_its_own():
+    train = frame(10, category=["A"] * 10)
+    val = frame(10, category=["A"] * 5 + [None] * 5)
+    row = by(leakage.shift_rows(train, val, CONFIG), feature="category")
+    assert row["flagged"] and row["value"] in ("A", "(missing)") and "(missing)" in row["note"]
+
+
+def test_screen_4_ignores_the_label_completely():
+    train, val = frame(20, label=[0, 1] * 10), frame(20, last_close=0.9)
+    a = leakage.audit(train, val.assign(label=[0, 1] * 10), CONFIG)
+    b = leakage.audit(train, val.assign(label=[1] * 20), CONFIG)
+    c = leakage.audit(train, val.drop(columns=["label"]), CONFIG)
+    assert a["shift"] == b["shift"] == c["shift"]
+    assert "yes_rate" not in str(a["shift"])
+
+
+def test_screen_4_needs_markets_on_both_sides_and_the_same_columns():
+    with pytest.raises(ValueError, match="at least one"):
+        leakage.shift_rows(frame(5), frame(5).iloc[0:0], CONFIG)
+    with pytest.raises(ValueError, match="lacks feature columns"):
+        leakage.audit(frame(5), frame(5).drop(columns=["high"]), CONFIG)
+
+
+def test_screen_4_thresholds_come_from_the_config():
+    c = copy.deepcopy(CONFIG)
+    c["leakage"]["shift_number_difference"] = 2.0
+    c["leakage"]["shift_share_change"] = 0.5
+    train = frame(4, last_close=[0.0, 1.0, 0.0, 1.0], has_fee=[True, False, False, False])
+    val = frame(4, last_close=1.0, has_fee=[True, True, False, False])      # last_close +0.87 sd, has_fee +25 points
+    assert by(leakage.shift_rows(train, val, CONFIG), feature="last_close")["flagged"]
+    assert by(leakage.shift_rows(train, val, CONFIG), feature="has_fee")["flagged"]
+    assert not by(leakage.shift_rows(train, val, c), feature="last_close")["flagged"]
+    assert not by(leakage.shift_rows(train, val, c), feature="has_fee")["flagged"]
+
+
+def test_screen_4_covers_every_feature_once():
+    names = [r["feature"] for r in leakage.shift_rows(frame(5), frame(5), CONFIG)]
+    assert sorted(names) == sorted(FEATURES)
+
+
+def test_screen_4_summary_lines_name_the_flags():
+    train = frame(100, has_fee=[True] + [False] * 99, last_close=np.linspace(0.2, 0.8, 100))
+    val = frame(100, has_fee=[True] * 40 + [False] * 60, last_close=0.95)
+    text = "\n".join(leakage.summary_lines(leakage.audit(train, val, CONFIG), CONFIG))
+    assert "screen 4, train versus validation, features only (100 validation markets" in text
+    assert "FLAG has_fee = True: 1.0% of train, 40.0% of validation (+39.0 points)" in text
+    assert "FLAG last_close:" in text and "standard deviations" in text
+    clean = "\n".join(leakage.summary_lines(leakage.audit(frame(10), frame(10), CONFIG), CONFIG))
+    assert "0 of 13 features flagged" in clean
+
+
+def test_screen_4_float_error_does_not_hide_a_move_of_exactly_half_a_deviation():
+    train = frame(4, last_close=[1.0, 2.0, 3.0, 4.0])
+    sd = float(np.std([1, 2, 3, 4], ddof=1))
+    assert (2.5 + 0.5 * sd - 2.5) / sd < 0.5  # the plain division lands just under 0.5
+    for sign in (+1, -1):
+        row = by(leakage.shift_rows(train, frame(4, last_close=2.5 + sign * 0.5 * sd), CONFIG), feature="last_close")
+        assert row["flagged"] and abs(row["change"]) == 0.5
+
+
+def test_audit_hands_validation_to_screen_4_without_its_label(monkeypatch):
+    seen = []
+    real = leakage.shift_rows
+    monkeypatch.setattr(leakage, "shift_rows", lambda tr, va, c: (seen.append(list(va.columns)), real(tr, va, c))[1])
+    leakage.audit(frame(10), frame(10), CONFIG)
+    assert len(seen) == 1 and "label" not in seen[0] and "category" in seen[0]

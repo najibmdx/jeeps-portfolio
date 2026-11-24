@@ -98,7 +98,8 @@ dataset:
   #   event_key = event_id, or the market's own id when event_id is missing (9 markets)
 
 leakage:
-  # Stage 4 screens, run on the TRAIN part only. A flag is a finding to discuss. Nothing is dropped automatically.
+  # Stage 4 screens 1 to 3 run on the TRAIN part only. Screen 4 compares train with validation, features only (no labels).
+  # A flag is a finding to discuss. Nothing is dropped automatically.
   # Screen 1: a group of train markets whose outcome never varies (all Yes or all No) is flagged, but only if the
   # group is big enough to mean something. The event minimum matters because one huge event can be 50 markets.
   min_markets_in_segment: 50
@@ -107,6 +108,12 @@ leakage:
   clock_like_correlation: 0.5
   # Upper ends of the sibling-count groups: 1, 2 to 5, 6 to 15, 16 and more (the groups of the design record).
   sibling_bucket_edges: [1, 5, 15]
+  # Screen 4, train versus validation, features only. A number feature is flagged if its validation mean sits at least
+  # this many train standard deviations from its train mean. A yes/no or category feature is flagged if the share of
+  # any value changes by at least this much (0.10 = 10 percentage points). Round numbers, not tuned to the data.
+  # A flag means validation looks different from train (expected with a split by time), not that anything leaked.
+  shift_number_difference: 0.5
+  shift_share_change: 0.10
   # Screen 3 is not recomputed here: it needs bars after t, which the dataset does not hold. It is cited from
   # audit_expected.final_bar_predicts_outcome, which audit.py reproduced on real data in Stage 1.
 
