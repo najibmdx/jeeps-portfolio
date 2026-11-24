@@ -98,6 +98,18 @@ def validate_config(config: dict) -> dict:
     if list(m["slices"]) != ["all", "contested"]:
         raise ValueError("metrics.slices must be [all, contested]")
 
+    if not isinstance(m["price_clip"], (int, float)) or isinstance(m["price_clip"], bool) or not 0 < m["price_clip"] < 0.5:
+        raise ValueError("metrics.price_clip must be above 0 and below 0.5")
+    bands = m["calibration_bands"]
+    if (not isinstance(bands, list) or len(bands) < 3 or bands[0] != 0 or bands[-1] != 1
+            or any(not isinstance(b, (int, float)) or isinstance(b, bool) for b in bands) or any(b >= c for b, c in zip(bands, bands[1:]))):
+        raise ValueError("metrics.calibration_bands must be a strictly increasing list of at least 3 numbers, from 0 to 1")
+    ev = config["evaluation"]
+    if not isinstance(ev["bootstrap_draws"], int) or isinstance(ev["bootstrap_draws"], bool) or ev["bootstrap_draws"] < 1:
+        raise ValueError("evaluation.bootstrap_draws must be a whole number, at least 1")
+    if not isinstance(ev["interval"], (int, float)) or isinstance(ev["interval"], bool) or not 0 < ev["interval"] < 1:
+        raise ValueError("evaluation.interval must be above 0 and below 1")
+
     models = config["models"]
     if not models["ladder"] or not set(models["ladder"]) <= set(KNOWN_MODELS):
         raise ValueError(f"models.ladder must be a non-empty list drawn from {list(KNOWN_MODELS)}")
