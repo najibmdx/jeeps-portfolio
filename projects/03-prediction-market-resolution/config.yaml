@@ -44,27 +44,28 @@ data:
   licence: "CC-BY-4.0 for the authors' processing. Fields that come from the Polymarket API stay under Polymarket's terms."
   citation: "Akey, P., Gregoire, V., Harvie, N., and Martineau, C. (2026). Who Wins and Who Loses In Prediction Markets? Evidence from Polymarket. Working paper."
   # Expected file sizes were read from the Hugging Face file listing and from the downloaded files.
-  # sha256 is recorded in Stage 1, when the files are downloaded on Jeeps's machine. null = not recorded yet.
+  # sha256 was computed in Stage 1 on the files as downloaded from Hugging Face. download.py checks every download
+  # against these, so a changed or damaged file is caught before anything uses it.
   files:
     events:
       file: events.parquet
       bytes: 7581274
-      sha256: null
+      sha256: 634dc8f45bd88d8d742d9d8bdf564fbe98b0d7b4b004283fd3103a2e72882dce
       url: https://huggingface.co/datasets/vgregoire/polymarket-users/resolve/main/events.parquet
     markets:
       file: markets.parquet
       bytes: 22591844
-      sha256: null
+      sha256: ca0a8438097fa830a2f94025e46196f4ff7a803656419e041f5c86c081c4a723
       url: https://huggingface.co/datasets/vgregoire/polymarket-users/resolve/main/markets.parquet
     predictions:
       file: predictions.parquet
       bytes: 119721790
-      sha256: null
+      sha256: 4c429f43f5f40bab17dad2634e113cadc7cc27f1989654fcc4142bd04fe71119
       url: https://huggingface.co/datasets/vgregoire/polymarket-users/resolve/main/predictions.parquet
     ohlcv_1d:
       file: ohlcv_1d.parquet
       bytes: 161540522
-      sha256: null
+      sha256: 5dfd3de7449e795eb8bd8b0d76329c634414109b0a1da489059236dbc37a58e7
       url: https://huggingface.co/datasets/vgregoire/polymarket-users/resolve/main/ohlcv_1d.parquet
 
 features:
@@ -99,3 +100,35 @@ models:
 
 evaluation:
   outputs_folder: outputs
+
+# What the audit must find in the real data (src/audit.py compares against this and stops on any difference).
+# First computed in Claude's sandbox on 24 Nov 2026; Jeeps's own run is the check. Contested means
+# contested_low <= last close before t < contested_high, so near-decided and contested add up to the universe.
+audit_expected:
+  rows: {events: 316429, markets: 729133, predictions: 1458223, ohlcv_1d: 4765439}
+  markets_with_exactly_one_winner: 667794
+  markets_with_no_winner: 61270
+  markets_with_two_or_more_winners: 0
+  binary_markets: 218089
+  binary_yes_rate: 0.2729
+  outcome_yes_compared: 218089
+  outcome_yes_disagreements: 0
+  close_after_expiration: 170397
+  close_before_expiration: 46247
+  final_bar_predicts_outcome: 0.9895
+  open_at_t: 101268
+  with_bars_before_t: 72457
+  universe: 43881
+  universe_events: 10752
+  universe_yes_rate: 0.1881
+  contested: 17071
+  near_decided: 26810
+  universe_fee_flag: 1349
+  expiration_null: 448
+  expiration_on_the_hour: 42395
+  boundaries: ["2025-12-23", "2026-02-09"]
+  split_sizes: {train: 26173, validation: 8637, test: 9071}
+  split_events: {train: 7954, validation: 1496, test: 1362}
+  purge_train: 2276
+  purge_validation: 1208
+  events_straddling_a_boundary: 58

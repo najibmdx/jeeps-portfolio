@@ -31,7 +31,7 @@ def test_file_sizes_and_urls(config):
     assert sizes == {"events": 7581274, "markets": 22591844, "predictions": 119721790, "ohlcv_1d": 161540522}
     for entry in config["data"]["files"].values():
         assert entry["url"].startswith("https://huggingface.co/datasets/vgregoire/polymarket-users/resolve/main/")
-        assert entry["sha256"] is None  # recorded in Stage 1
+        assert len(entry["sha256"]) == 64
 
 
 def test_leaking_fields_stay_excluded(config):

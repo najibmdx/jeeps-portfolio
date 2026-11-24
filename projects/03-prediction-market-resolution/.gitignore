@@ -1,0 +1,6 @@
+# Data and results are never committed. They are rebuilt by download.py and the pipeline.
+data/
+outputs/
+.venv/
+__pycache__/
+.pytest_cache/
