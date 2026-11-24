@@ -1,4 +1,4 @@
-"""Stage 4: the leakage audit, on the TRAIN part only.
+"""Stage 4: the leakage audit. Screens 1 to 3 read the TRAIN part only; screen 4 also reads validation features.
 
     python src/leakage.py [--data-dir DIR] [--k 7]       (needs the split files written by split.py)
 
@@ -10,7 +10,11 @@
 4. Screen 3 is the final-bar leak. It needs bars after t, which the dataset does not hold, so it is cited from
    the audit, not recomputed.
 
-A flag is a finding to discuss. Nothing is dropped automatically. Validation and test are never read here.
+4. Screen 4: do the features look different in validation than in train? Features only: the label column of
+   validation is dropped before anything is computed. A flag says the model will meet inputs unlike its training
+   inputs (expected with a split by time). It is not leakage.
+
+A flag is a finding to discuss. Nothing is dropped automatically. Test is never read here.
 """
 
 import argparse
@@ -119,11 +123,65 @@ def clock_like_rows(train, config) -> list:
     return rows
 
 
-def audit(train, config) -> dict:
-    """All of Stage 4, from the train rows only."""
+def _is_yes_no(series) -> bool:
+    if series.dtype.kind == "b":
+        return True
+    values = series.dropna()
+    return series.dtype == object and len(values) > 0 and all(isinstance(v, (bool, np.bool_)) for v in values)
+
+
+def _shares(series) -> pd.Series:
+    return series.map(lambda v: "(missing)" if pd.isna(v) else str(v)).value_counts(normalize=True)
+
+
+def shift_rows(train, validation, config) -> list:
+    """Screen 4. For each feature: how far validation sits from train. Features only; the label is never used."""
+    lk = config["leakage"]
+    f = config["features"]
+    if len(train) == 0 or len(validation) == 0:
+        raise ValueError("the shift screen needs at least one train and one validation market")
+    rows = []
+    for name in list(f["price_path"]) + list(f["activity"]) + list(f["context"]):
+        a, b = train[name], validation[name]
+        if _is_yes_no(a) and _is_yes_no(b):
+            ta, tb = float(a.astype(float).mean()), float(b.astype(float).mean())
+            change = round(tb - ta, 12)
+            rows.append({"feature": name, "kind": "yes_no", "train": ta, "validation": tb, "change": change,
+                         "value": "True", "flagged": abs(change) >= lk["shift_share_change"], "note": None})
+            continue
+        x, y = _as_number(a), _as_number(b)
+        if x is not None and y is not None:
+            sd = float(x.std(ddof=1)) if len(x) > 1 else 0.0
+            ta, tb = float(x.mean()), float(y.mean())
+            if sd == 0 or np.isnan(sd):
+                moved = tb != ta
+                rows.append({"feature": name, "kind": "number", "train": ta, "validation": tb, "change": None, "value": None,
+                             "flagged": moved, "note": "constant on train: flagged if validation differs, no size can be given"})
+                continue
+            change = round((tb - ta) / sd, 12)
+            rows.append({"feature": name, "kind": "number", "train": ta, "validation": tb, "change": change,
+                         "value": None, "flagged": abs(change) >= lk["shift_number_difference"], "note": None})
+            continue
+        sa, sb = _shares(a), _shares(b)
+        values = sorted(set(sa.index) | set(sb.index))
+        diffs = {v: round(float(sb.get(v, 0.0) - sa.get(v, 0.0)), 12) for v in values}
+        top = max(values, key=lambda v: abs(diffs[v]))
+        rows.append({"feature": name, "kind": "category", "train": float(sa.get(top, 0.0)), "validation": float(sb.get(top, 0.0)),
+                     "change": diffs[top], "value": top, "flagged": abs(diffs[top]) >= lk["shift_share_change"],
+                     "note": "only in validation: " + ", ".join(v for v in values if v not in sa.index) if any(v not in sa.index for v in values) else None})
+    return rows
+
+
+def audit(train, validation, config) -> dict:
+    """All of Stage 4. Screens 1 to 3 use the train rows only; screen 4 compares the features of train and validation."""
     missing = [c for c in REQUIRED_COLUMNS if c not in train.columns]
     if missing:
         raise ValueError(f"the train table lacks the columns the screens need: {missing}")
+    validation = validation.drop(columns=["label"], errors="ignore")  # screen 4 never sees an outcome
+    f = config["features"]
+    gone = [c for c in list(f["price_path"]) + list(f["activity"]) + list(f["context"]) if c not in validation.columns]
+    if gone:
+        raise ValueError(f"the validation table lacks feature columns: {gone}")
     return {
         "train_markets": len(train),
         "train_events": int(train["event_key"].nunique()),
@@ -131,6 +189,8 @@ def audit(train, config) -> dict:
         "problems": check_table(config, list(train.columns)),
         "segments": segment_rows(train, config),
         "clock_like": clock_like_rows(train, config),
+        "validation_markets": len(validation),
+        "shift": shift_rows(train, validation, config),
         "final_bar_leak": {
             "value": config["audit_expected"]["final_bar_predicts_outcome"],
             "note": "cited from audit.py (reproduced on real data in Stage 1); not recomputed here because it needs bars after t",
@@ -158,6 +218,18 @@ def summary_lines(r, config) -> list:
         f"{len(clock)} of {len(numeric)} numeric features flagged"
     )
     lines += [f"    FLAG {c['feature']}: {c['rank_correlation_with_t']:+.3f}" for c in clock]
+    shift = [c for c in r["shift"] if c["flagged"]]
+    lines.append(
+        f"  screen 4, train versus validation, features only ({r['validation_markets']:,} validation markets; number features "
+        f"at least {lk['shift_number_difference']} train standard deviations, shares at least {lk['shift_share_change'] * 100:g} points): "
+        f"{len(shift)} of {len(r['shift'])} features flagged"
+    )
+    for c in shift:
+        if c["kind"] == "number":
+            size = "constant on train" if c["change"] is None else f"{c['change']:+.2f} standard deviations"
+            lines.append(f"    FLAG {c['feature']}: mean {c['train']:.4g} in train, {c['validation']:.4g} in validation ({size})")
+        else:
+            lines.append(f"    FLAG {c['feature']} = {c['value']}: {c['train']:.1%} of train, {c['validation']:.1%} of validation ({c['change']*100:+.1f} points)")
     lines.append(f"  screen 3, final-bar leak: {r['final_bar_leak']['value']:.2%} (cited from audit.py, not recomputed here)")
     lines += [f"  PROBLEM {p}" for p in r["problems"]]
     return lines
@@ -171,7 +243,7 @@ def table_lines(r) -> list:
 
 
 def main(argv=None) -> int:
-    parser = argparse.ArgumentParser(description="Leakage audit on the train split")
+    parser = argparse.ArgumentParser(description="Leakage audit on the train split, plus the train-versus-validation feature shift")
     parser.add_argument("--data-dir", default=None)
     parser.add_argument("--k", type=int, default=None, help="days after open (default: from config.yaml)")
     args = parser.parse_args(argv)
@@ -181,14 +253,19 @@ def main(argv=None) -> int:
     if not split.split_path(data_dir, config, "train", k).exists():
         print(f"No train split in {data_dir}. Run src/pipeline.py (or src/split.py) first.")
         return 2
-    report = audit(split.read_split(data_dir, config, "train", k), config)
+    if not split.split_path(data_dir, config, "validation", k).exists():
+        print(f"No validation split in {data_dir}. Run src/pipeline.py (or src/split.py) first.")
+        return 2
+    train = split.read_split(data_dir, config, "train", k)
+    validation = split.read_split(data_dir, config, "validation", k)
+    report = audit(train, validation, config)
     out_dir = settings.PROJECT_DIR / config["evaluation"]["outputs_folder"]
     out_dir.mkdir(exist_ok=True)
     (out_dir / f"leakage_audit_k{k}.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
     print("\n".join(table_lines(report)))
     print()
     print("\n".join(summary_lines(report, config)))
-    print("Validation and test were not read.")
+    print("Test was not read. Validation was read for its features only, not its outcomes.")
     return 1 if report["problems"] else 0
 
 

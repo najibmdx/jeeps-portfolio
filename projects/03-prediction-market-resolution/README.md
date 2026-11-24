@@ -2,7 +2,7 @@
 
 Learning project. No claim about trading use, returns or profit.
 
-**Status: Stage 4 (dataset built, split by time and checked for leakage). Nothing is modelled yet and there are no results.**
+**Status: Stage 4 (dataset built, split by time, checked for leakage and for shift between train and validation). Nothing is modelled yet and there are no results.**
 
 ## The question
 
@@ -26,6 +26,6 @@ On real data, download the four files into `data/` (about 310 MB, each checked a
 
 `pipeline.py` checks the layout, builds the dataset into `data/derived/`, then splits it by decision time into train, validation and test files in the same folder. Markets of one event stay together, and train and validation markets whose outcome was not yet known when the next period began are dropped. Nothing reads the test file.
 
-`python src/leakage.py` then prints the leakage audit on the train part only: a table of every column with its source and whether it is known at the decision time, and three screens (groups where the outcome never varies, features that move with the calendar, and the final-bar leak, cited from the audit). A flag is a finding to look at. Nothing is dropped automatically.
+`python src/leakage.py` then prints the leakage audit: a table of every column with its source and whether it is known at the decision time, and four screens. Three use the train part only (groups where the outcome never varies, features that move with the calendar, and the final-bar leak, cited from the audit). The fourth compares the features of train with those of validation, without any outcome, to show which inputs look different in the later period. A flag is a finding to look at, not proof of a leak, and nothing is dropped automatically. The test file is never read.
 
 Tests: `python -m pytest -q`
