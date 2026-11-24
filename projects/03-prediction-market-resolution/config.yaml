@@ -156,6 +156,11 @@ metrics:
   decides: log_loss               # lower is better
   also: [brier, calibration_table]
   slices: [all, contested]
+  # Every forecast is clipped into [price_clip, 1 - price_clip] before scoring, so a price of exactly 0 or 1 that meets
+  # the other outcome costs about 6.9 (log loss), not infinity. The same clip for all three baselines.
+  price_clip: 0.001
+  # Fixed price bands for the calibration table: [low, high), the last band includes 1. They line up with the contested line.
+  calibration_bands: [0, 0.05, 0.1, 0.2, 0.3, 0.5, 0.7, 0.95, 1.0]
 
 models:
   # A ladder: each step adds one thing.
@@ -166,6 +171,9 @@ models:
 
 evaluation:
   outputs_folder: outputs
+  # The wobble: re-draw the validation set this many times by resampling whole events, show the middle share of the results.
+  bootstrap_draws: 200
+  interval: 0.90
 
 # What the audit must find in the real data (src/audit.py compares against this and stops on any difference).
 # First computed in Claude's sandbox on 24 Nov 2026; Jeeps's own run is the check. Contested means
