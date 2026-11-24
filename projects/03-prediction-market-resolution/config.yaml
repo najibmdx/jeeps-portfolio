@@ -84,6 +84,8 @@ dataset:
   # The built table: one row per market in the universe. Written to <data folder>/derived/. Never committed.
   folder: derived
   file: dataset_k{k}.parquet
+  # The three split files written by Stage 3 ({part} is train, validation or test). Never committed.
+  split_file: "{part}_k{k}.parquet"
   # Columns that identify the row or are needed later for splitting and purging. Never model inputs.
   # expiration_time sits here only because it is held back for one labelled ablation (Stage 8).
   meta: [market_id, event_key, t, open_time, close_time, expiration_time, label]

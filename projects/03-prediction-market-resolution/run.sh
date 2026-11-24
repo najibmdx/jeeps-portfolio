@@ -2,7 +2,7 @@
 # Run the whole project. Results go to outputs/. Extra options are passed on:
 #   bash run.sh --sample     (made-up data, for CI)
 #   bash run.sh --data-dir D (look for the four data files in folder D)
-# Stage 2: checks the data files and their layout, then builds the dataset. Split and model steps come later.
+# Stage 3: checks the data files and their layout, builds the dataset, then splits it by time. Model steps come later.
 # This never opens the test split.
 set -euo pipefail
 

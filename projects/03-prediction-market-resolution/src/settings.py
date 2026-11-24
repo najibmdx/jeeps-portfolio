@@ -46,6 +46,10 @@ def validate_config(config: dict) -> dict:
         raise ValueError(f"split: train + validation + test must add up to 1, got {sum(shares)}")
     if split["order_by"] != "t":
         raise ValueError("split.order_by must be t (the decision time)")
+    if split["purge_unknown_labels"] is not True:
+        raise ValueError("split.purge_unknown_labels must stay true: a market whose outcome is unknown when the next period starts leaks it")
+    if split["events_whole"] is not True:
+        raise ValueError("split.events_whole must stay true: markets of one event must never sit in two splits")
 
     if not isinstance(config["seed"], int) or isinstance(config["seed"], bool):
         raise ValueError("seed must be a whole number")
@@ -76,6 +80,8 @@ def validate_config(config: dict) -> dict:
     d = config["dataset"]
     if "{k}" not in d["file"]:
         raise ValueError("dataset.file must contain {k} so the k=7 and k=3 tables never overwrite each other")
+    if "{k}" not in d["split_file"] or "{part}" not in d["split_file"]:
+        raise ValueError("dataset.split_file must contain {part} and {k} so no split file overwrites another")
     if set(d["meta"]) & set(used):
         raise ValueError("dataset.meta: a column cannot be both a model input and a meta column")
     for needed in ("market_id", "event_key", "t", "close_time", "label"):
