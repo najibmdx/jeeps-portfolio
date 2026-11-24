@@ -151,7 +151,7 @@ def test_a_forecast_for_a_market_does_not_depend_on_the_other_validation_markets
     whole = models.forecast_all(fitted, columns, base, val, CONFIG)
     part = models.forecast_all(fitted, columns, base, val.iloc[10:20], CONFIG)
     for name in whole:
-        assert np.array_equal(whole[name][10:20], part[name])
+        assert whole[name][10:20] == pytest.approx(part[name], rel=1e-9, abs=1e-12)   # not bit-for-bit: the maths library rounds differently by batch size
 
 
 def test_the_models_need_both_outcomes_in_train():
