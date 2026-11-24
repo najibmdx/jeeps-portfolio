@@ -177,7 +177,10 @@ def _range(draws, interval) -> dict:
     return {"low": float(a), "high": float(b)}
 
 
-def score_slice(validation, fc, mask, weights, codes, n_events, interval) -> dict:
+def score_slice(validation, fc, mask, weights, codes, n_events, interval, names=BASELINES) -> dict:
+    """Scores, wobble and paired differences against raw_price for the forecasts called `names` (raw_price must be one)."""
+    if "raw_price" not in names:
+        raise ValueError("the forecasts to score must include raw_price: every difference is taken against it")
     y_all = validation["label"].to_numpy(dtype="float64")
     n = int(mask.sum())
     if n == 0:
@@ -185,7 +188,7 @@ def score_slice(validation, fc, mask, weights, codes, n_events, interval) -> dic
     y = y_all[mask]
     result = {"markets": n, "events": int(len(np.unique(codes[mask]))), "yes_rate": float(y.mean()), "scores": {}, "wobble": {}, "difference_vs_raw_price": {}}
     draws = {}
-    for name in BASELINES:
+    for name in names:
         p = fc[name][mask]
         result["scores"][name] = {"log_loss": log_loss(y, p), "brier": brier(y, p)}
         result["wobble"][name] = {}
@@ -195,7 +198,7 @@ def score_slice(validation, fc, mask, weights, codes, n_events, interval) -> dic
             counts = np.bincount(codes[mask], minlength=n_events).astype("float64")
             draws[(name, metric)] = weighted_scores(weights, sums, counts)
             result["wobble"][name][metric] = _range(draws[(name, metric)], interval)
-    for name in BASELINES[1:]:
+    for name in [n for n in names if n != "raw_price"]:
         result["difference_vs_raw_price"][name] = {}
         for metric in METRICS:
             diff = draws[(name, metric)] - draws[("raw_price", metric)]

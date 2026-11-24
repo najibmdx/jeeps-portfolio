@@ -18,4 +18,4 @@ def test_no_promises():
 
 
 def test_readme_status_matches_the_stage():
-    assert "Stage 5" in README and "there are no results to report" in README and "baselines scored on validation" in README
+    assert "Stage 6" in README and "no final results to report" in README and "untuned model ladder scored on validation" in README and "python src/models.py" in README
