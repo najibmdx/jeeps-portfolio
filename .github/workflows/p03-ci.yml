@@ -1,0 +1,42 @@
+name: p03-prediction-market-resolution
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "projects/03-prediction-market-resolution/**"
+      - ".github/workflows/p03-ci.yml"
+  pull_request:
+    paths:
+      - "projects/03-prediction-market-resolution/**"
+      - ".github/workflows/p03-ci.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  tests-and-run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: projects/03-prediction-market-resolution
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.14"
+          cache: pip
+          cache-dependency-path: projects/03-prediction-market-resolution/requirements.txt
+
+      - name: Install the pinned requirements, nothing else
+        run: python -m pip install -r requirements.txt
+
+      # CI cannot download the real data (the files total about 300 MB), so it runs the pipeline on MADE-UP data.
+      # That proves every step runs and hangs together; the numbers mean nothing. RUN_SLOW=1 switches on
+      # tests/test_run_sh.py, which runs `bash run.sh --sample` for real.
+      - name: Tests, including run.sh on made-up data
+        env:
+          RUN_SLOW: "1"
+        run: python -m pytest -q
