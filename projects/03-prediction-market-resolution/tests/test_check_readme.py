@@ -356,6 +356,42 @@ def test_a_row_with_something_added_is_caught(built):
     assert cr.main([], project=built) == 1
 
 
+def test_swapped_column_headers_are_caught(built, capsys):
+    """Codex finding on PR 39: with the headers ignored, swapping Test window and Validation window passed."""
+    mutate_readme(built, "| Test window | Validation window |", "| Validation window | Test window |")
+    assert cr.main([], project=built) == 1
+    assert "header of 'Headline: frozen model against the market price'" in capsys.readouterr().out
+
+
+def test_a_renamed_column_in_any_table_is_caught(built):
+    mutate_readme(built, "| Slice | Forecast | Log loss | Range (90%) |", "| Slice | Forecast | Brier | Range (90%) |")
+    assert cr.main([], project=built) == 1
+
+
+def test_a_header_with_an_extra_column_is_caught(built):
+    mutate_readme(built, "| Split | Markets | Events |\n|---|---|---|", "| Split | Markets | Events | Notes |\n|---|---|---|---|")
+    assert cr.main([], project=built) == 1
+
+
+def test_a_changed_line_under_the_header_is_caught(built):
+    mutate_readme(built, "| Split | Markets | Events |\n|---|---|---|", "| Split | Markets | Events |\n|---|---|")
+    assert cr.main([], project=built) == 1
+
+
+def test_a_missing_header_is_caught(built):
+    mutate_readme(built, "| Split | Markets | Events |\n|---|---|---|\n", "")
+    assert cr.main([], project=built) == 1
+
+
+def test_every_generated_table_has_a_header_the_check_looks_at():
+    """Each table's header is in the block, and the check reports it by name when it is wrong."""
+    items, _sentences, _notes = cr.build(make_results())
+    block = cr.results_markdown(make_results())
+    assert len(items) == 11
+    for _kind, title, header, _rows in items:
+        assert cr.table_md(header, []).split("\n")[0] in block.split("\n"), title
+
+
 def test_a_changed_range_end_is_caught(built):
     mutate_readme(built, "-0.0012 to +0.0002", "-0.0012 to +0.0003")
     assert cr.main([], project=built) == 1
