@@ -1,7 +1,5 @@
 # Recommendation: Project C, Prediction Market Resolution
 
-Drafted with Claude, reviewed by me. This is for someone who reads markets but is not technical. It makes no claim about profit, returns or trading.
-
 ## What the model does
 After a Polymarket Yes/No market has been open for 7 days, it gives a chance that the market ends up Yes. I then compared that chance with the market's own price at the same moment.
 
