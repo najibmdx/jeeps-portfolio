@@ -406,17 +406,25 @@ def sections_of(readme_text):
 
 
 def find_problems(readme_text, results):
-    """Every row must stand under its own table title, and every generated sentence must be in the README."""
+    """Every table must have its own header (and the line under it) and every row, each as a whole line under its own
+    title, and every generated sentence must be in the README. The header matters as much as the rows: it says which
+    window, slice or model each number belongs to."""
     items, sentences, _notes = build(results)
     sections = sections_of(readme_text)
     problems = []
-    for _kind, title, _header, rows in items:
+    for _kind, title, header, rows in items:
         if title not in sections:
             problems.append(f"table '{title}' is not in README.md")
             continue
+        lines = sections[title].split("\n")
+        head_line, rule_line = table_md(header, []).split("\n")
+        if head_line not in lines:
+            problems.append(f"header of '{title}': expected {head_line!r}")
+        elif lines.index(head_line) + 1 >= len(lines) or lines[lines.index(head_line) + 1] != rule_line:
+            problems.append(f"header of '{title}': the line under the header is not {rule_line!r}")
         for label, cells in rows:
             text = "| " + " | ".join(str(c) for c in cells) + " |"
-            if text not in sections[title].split("\n"):
+            if text not in lines:
                 problems.append(f"{label}: expected {text!r} under '{title}'")
     for label, text in sentences:
         if text not in readme_text:
