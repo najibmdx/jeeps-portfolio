@@ -1,6 +1,9 @@
-# Data and results are never committed. They are rebuilt by download.py and the pipeline.
+# Data and results are not committed. They are rebuilt by download.py and the pipeline.
+# The one exception is outputs/final_test_k7.json: the report of the one-time test, kept on record.
 data/
-outputs/
+!outputs/
+outputs/*
+!outputs/final_test_k7.json
 .venv/
 __pycache__/
 .pytest_cache/
