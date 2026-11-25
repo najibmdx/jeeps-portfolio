@@ -168,7 +168,6 @@ One subscription is worth 1 unit and one call costs the amount shown. These cost
 - `model_note.md`: how the model was trained, evaluated and tuned.
 - `recommendation.md`: one page for a non-technical reader.
 - `learning_log.md`: what was learned.
-- `prompt_chat_history.md`: the raw AI chat history.
 
 ## AI tools used
 
