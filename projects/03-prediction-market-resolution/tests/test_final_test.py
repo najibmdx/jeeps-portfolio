@@ -159,8 +159,11 @@ def test_the_pipeline_and_run_sh_never_open_the_test_split(tmp_path):
     assert "final_test" not in (SRC / "pipeline.py").read_text(encoding="utf-8")
     commands = [l for l in (Path(settings.PROJECT_DIR) / "run.sh").read_text(encoding="utf-8").splitlines() if not l.lstrip().startswith("#")]
     assert not any("final_test" in l for l in commands)
+    lock = settings.DATA_DIR / "test_opened.lock"
+    before = lock.read_bytes() if lock.exists() else None   # after the one-time test (25 Nov 2026) the real lock is there, and must stay
     assert pipeline.main(["--sample"]) == 0
-    assert not (settings.DATA_DIR / "test_opened.lock").exists()
+    after = lock.read_bytes() if lock.exists() else None
+    assert after == before   # a sample run neither creates the lock nor changes or removes an existing one
 
 
 # ---- is the frozen file committed (a real git repository)

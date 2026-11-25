@@ -37,9 +37,13 @@ def test_wrong_layout_gives_exit_1(tmp_path, capsys):
 
 
 def test_gitignore_keeps_data_and_outputs_out():
-    text = (settings.PROJECT_DIR / ".gitignore").read_text()
-    for line in ("data/", "outputs/", ".venv/"):
-        assert line in text.splitlines()
+    """Data and results stay out of the repo; the one exception is the report of the one-time test (Stage 10).
+    tests/test_check_readme.py asks git itself which paths are ignored."""
+    lines = (settings.PROJECT_DIR / ".gitignore").read_text().splitlines()
+    for line in ("data/", ".venv/", "outputs/*", "!outputs/final_test_k7.json"):
+        assert line in lines
+    assert lines.index("outputs/*") < lines.index("!outputs/final_test_k7.json")   # the exception must come after the rule it exempts
+    assert [ln for ln in lines if ln.startswith("!")] == ["!outputs/", "!outputs/final_test_k7.json"]   # and it is the only one
 
 
 def test_sample_run_builds_the_dataset(capsys):

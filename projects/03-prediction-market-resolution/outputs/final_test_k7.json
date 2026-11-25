@@ -1,0 +1,1013 @@
+{
+  "model": "lr_all_features",
+  "params": {
+    "C": 1.0
+  },
+  "fitted_on": "train only (not refitted on train + validation)",
+  "frozen_sha256": "6e88e0e02464ab3485d6a617ebf3b4f6a6eee92410c5299a1ea9b7eadc8cb87a",
+  "opened_at": "2026-11-25T02:30:42.482135+00:00",
+  "settings": {
+    "seed": 42,
+    "forest_trees": 300,
+    "logistic_max_iter": 1000
+  },
+  "train_markets": 23897,
+  "validation_markets": 7374,
+  "test_markets": 8991,
+  "test_events": 1336,
+  "price_clip": 0.001,
+  "bootstrap_draws": 200,
+  "interval": 0.9,
+  "reproduces_frozen_on_validation": {
+    "all": {
+      "frozen": 0.1533170241754834,
+      "this_run": 0.1533170241754834,
+      "difference": 0.0
+    },
+    "contested": {
+      "frozen": 0.4722416039805505,
+      "this_run": 0.4722416039805505,
+      "difference": 0.0
+    }
+  },
+  "headline": {
+    "slice": "contested",
+    "test": {
+      "point": 0.0002689330953757896,
+      "low": -0.0012527952042305447,
+      "high": 0.002095729477397575,
+      "verdict": "cannot be told apart"
+    },
+    "reading": "No measurable difference from the market price in this test window.",
+    "validation": {
+      "point": 0.0011648342455299332,
+      "low": -0.0004902124980389112,
+      "high": 0.0030497188403486863,
+      "verdict": "cannot be told apart"
+    },
+    "validation_and_test": "agree"
+  },
+  "test": {
+    "events": 1336,
+    "slices": {
+      "all": {
+        "markets": 8991,
+        "events": 1336,
+        "yes_rate": 0.18184851518184852,
+        "scores": {
+          "raw_price": {
+            "log_loss": 0.15043223727315463,
+            "brier": 0.046888660472820635
+          },
+          "price_only_correction": {
+            "log_loss": 0.1502717918117239,
+            "brier": 0.04684981012838554
+          },
+          "base_rate": {
+            "log_loss": 0.4759389323485499,
+            "brier": 0.14933540200321122
+          },
+          "frozen_model": {
+            "log_loss": 0.15034466991805173,
+            "brier": 0.04690190062388565
+          }
+        },
+        "wobble": {
+          "raw_price": {
+            "log_loss": {
+              "low": 0.14007692662003673,
+              "high": 0.16013310605328687
+            },
+            "brier": {
+              "low": 0.04372196546770271,
+              "high": 0.0503140793435259
+            }
+          },
+          "price_only_correction": {
+            "log_loss": {
+              "low": 0.13982508158582518,
+              "high": 0.15986707742885514
+            },
+            "brier": {
+              "low": 0.04374432877307308,
+              "high": 0.050261798641484716
+            }
+          },
+          "base_rate": {
+            "log_loss": {
+              "low": 0.4617905663932818,
+              "high": 0.4884730765597752
+            },
+            "brier": {
+              "low": 0.1431734067648849,
+              "high": 0.15479436010411507
+            }
+          },
+          "frozen_model": {
+            "log_loss": {
+              "low": 0.14003320384112153,
+              "high": 0.16023580295372397
+            },
+            "brier": {
+              "low": 0.043705648457940276,
+              "high": 0.050287233916675236
+            }
+          }
+        },
+        "difference_vs_raw_price": {
+          "price_only_correction": {
+            "log_loss": {
+              "low": -0.00036259913070332557,
+              "high": 4.157634387147297e-05,
+              "point": -0.00016044546143073601,
+              "verdict": "cannot be told apart"
+            },
+            "brier": {
+              "low": -0.00010152370968434383,
+              "high": 1.828684672070257e-05,
+              "point": -3.8850344435098494e-05,
+              "verdict": "cannot be told apart"
+            }
+          },
+          "base_rate": {
+            "log_loss": {
+              "low": 0.3115056422792247,
+              "high": 0.3405434748011597,
+              "point": 0.32550669507539526,
+              "verdict": "worse"
+            },
+            "brier": {
+              "low": 0.09644570067982833,
+              "high": 0.10859394401526702,
+              "point": 0.10244674153039057,
+              "verdict": "worse"
+            }
+          },
+          "frozen_model": {
+            "log_loss": {
+              "low": -0.0005581957923041725,
+              "high": 0.00044043654640549664,
+              "point": -8.756735510290214e-05,
+              "verdict": "cannot be told apart"
+            },
+            "brier": {
+              "low": -0.0001513981080388135,
+              "high": 0.00018935013836685746,
+              "point": 1.3240151065012362e-05,
+              "verdict": "cannot be told apart"
+            }
+          }
+        },
+        "calibration": {
+          "frozen_model": [
+            {
+              "band": "0 to 0.05",
+              "markets": 5847,
+              "mean_forecast": 0.006231819183023,
+              "yes_rate": 0.004275696938600992
+            },
+            {
+              "band": "0.05 to 0.1",
+              "markets": 401,
+              "mean_forecast": 0.07315136408485044,
+              "yes_rate": 0.06483790523690773
+            },
+            {
+              "band": "0.1 to 0.2",
+              "markets": 512,
+              "mean_forecast": 0.1474331933885381,
+              "yes_rate": 0.19140625
+            },
+            {
+              "band": "0.2 to 0.3",
+              "markets": 342,
+              "mean_forecast": 0.2458348962080586,
+              "yes_rate": 0.2543859649122807
+            },
+            {
+              "band": "0.3 to 0.5",
+              "markets": 420,
+              "mean_forecast": 0.39339300429979795,
+              "yes_rate": 0.34285714285714286
+            },
+            {
+              "band": "0.5 to 0.7",
+              "markets": 311,
+              "mean_forecast": 0.5905247329076265,
+              "yes_rate": 0.5434083601286174
+            },
+            {
+              "band": "0.7 to 0.95",
+              "markets": 378,
+              "mean_forecast": 0.8346682243771487,
+              "yes_rate": 0.8227513227513228
+            },
+            {
+              "band": "0.95 and above",
+              "markets": 780,
+              "mean_forecast": 0.9893438268100349,
+              "yes_rate": 0.9935897435897436
+            }
+          ],
+          "raw_price": [
+            {
+              "band": "0 to 0.05",
+              "markets": 5777,
+              "mean_forecast": 0.0060756213195922466,
+              "yes_rate": 0.0036351047256361433
+            },
+            {
+              "band": "0.05 to 0.1",
+              "markets": 399,
+              "mean_forecast": 0.06772920012215129,
+              "yes_rate": 0.06265664160401002
+            },
+            {
+              "band": "0.1 to 0.2",
+              "markets": 530,
+              "mean_forecast": 0.14108107024900962,
+              "yes_rate": 0.16981132075471697
+            },
+            {
+              "band": "0.2 to 0.3",
+              "markets": 369,
+              "mean_forecast": 0.24096476891255367,
+              "yes_rate": 0.25474254742547425
+            },
+            {
+              "band": "0.3 to 0.5",
+              "markets": 432,
+              "mean_forecast": 0.3890903568785285,
+              "yes_rate": 0.33564814814814814
+            },
+            {
+              "band": "0.5 to 0.7",
+              "markets": 321,
+              "mean_forecast": 0.588588751413489,
+              "yes_rate": 0.5358255451713395
+            },
+            {
+              "band": "0.7 to 0.95",
+              "markets": 375,
+              "mean_forecast": 0.828277331635288,
+              "yes_rate": 0.8133333333333334
+            },
+            {
+              "band": "0.95 and above",
+              "markets": 788,
+              "mean_forecast": 0.9890152368177029,
+              "yes_rate": 0.9936548223350253
+            }
+          ]
+        },
+        "frozen_minus_price_only_correction": {
+          "low": -0.00047899806923885625,
+          "high": 0.0006078388287468575,
+          "point": 7.287810632783387e-05,
+          "verdict": "cannot be told apart"
+        }
+      },
+      "contested": {
+        "markets": 2426,
+        "events": 1004,
+        "yes_rate": 0.3425391591096455,
+        "scores": {
+          "raw_price": {
+            "log_loss": 0.4968564789025198,
+            "brier": 0.16316918146391376
+          },
+          "price_only_correction": {
+            "log_loss": 0.4969033636896884,
+            "brier": 0.16304546497746963
+          },
+          "base_rate": {
+            "log_loss": 0.6933111032040492,
+            "brier": 0.2440068492919694
+          },
+          "frozen_model": {
+            "log_loss": 0.4971254119978956,
+            "brier": 0.16324281272275684
+          }
+        },
+        "wobble": {
+          "raw_price": {
+            "log_loss": {
+              "low": 0.4781495064933597,
+              "high": 0.515154118168246
+            },
+            "brier": {
+              "low": 0.15598615031996094,
+              "high": 0.17081774707939743
+            }
+          },
+          "price_only_correction": {
+            "log_loss": {
+              "low": 0.47778486645642587,
+              "high": 0.5158893776774671
+            },
+            "brier": {
+              "low": 0.15576760892820044,
+              "high": 0.1707945378646743
+            }
+          },
+          "base_rate": {
+            "log_loss": {
+              "low": 0.6703467711550805,
+              "high": 0.7151176616941852
+            },
+            "brier": {
+              "low": 0.23400526287665618,
+              "high": 0.2535041940740688
+            }
+          },
+          "frozen_model": {
+            "log_loss": {
+              "low": 0.47799107657284223,
+              "high": 0.5155136832224648
+            },
+            "brier": {
+              "low": 0.15594470191419627,
+              "high": 0.17065955104351732
+            }
+          }
+        },
+        "difference_vs_raw_price": {
+          "price_only_correction": {
+            "log_loss": {
+              "low": -0.0006348737613478261,
+              "high": 0.0006818827305962111,
+              "point": 4.688478716857736e-05,
+              "verdict": "cannot be told apart"
+            },
+            "brier": {
+              "low": -0.0003503291085009117,
+              "high": 9.145672398934155e-05,
+              "point": -0.0001237164864441309,
+              "verdict": "cannot be told apart"
+            }
+          },
+          "base_rate": {
+            "log_loss": {
+              "low": 0.1713043262350254,
+              "high": 0.2233808308251579,
+              "point": 0.19645462430152938,
+              "verdict": "worse"
+            },
+            "brier": {
+              "low": 0.07060664556294213,
+              "high": 0.09250245199308525,
+              "point": 0.08083766782805563,
+              "verdict": "worse"
+            }
+          },
+          "frozen_model": {
+            "log_loss": {
+              "low": -0.0012527952042305447,
+              "high": 0.002095729477397575,
+              "point": 0.0002689330953757896,
+              "verdict": "cannot be told apart"
+            },
+            "brier": {
+              "low": -0.0005394710750156976,
+              "high": 0.0007115495562238101,
+              "point": 7.363125884307653e-05,
+              "verdict": "cannot be told apart"
+            }
+          }
+        },
+        "calibration": {
+          "frozen_model": [
+            {
+              "band": "0 to 0.05",
+              "markets": 80,
+              "mean_forecast": 0.044828918301359134,
+              "yes_rate": 0.05
+            },
+            {
+              "band": "0.05 to 0.1",
+              "markets": 391,
+              "mean_forecast": 0.0736981722592791,
+              "yes_rate": 0.06649616368286446
+            },
+            {
+              "band": "0.1 to 0.2",
+              "markets": 512,
+              "mean_forecast": 0.1474331933885381,
+              "yes_rate": 0.19140625
+            },
+            {
+              "band": "0.2 to 0.3",
+              "markets": 342,
+              "mean_forecast": 0.2458348962080586,
+              "yes_rate": 0.2543859649122807
+            },
+            {
+              "band": "0.3 to 0.5",
+              "markets": 420,
+              "mean_forecast": 0.39339300429979795,
+              "yes_rate": 0.34285714285714286
+            },
+            {
+              "band": "0.5 to 0.7",
+              "markets": 311,
+              "mean_forecast": 0.5905247329076265,
+              "yes_rate": 0.5434083601286174
+            },
+            {
+              "band": "0.7 to 0.95",
+              "markets": 365,
+              "mean_forecast": 0.8306847090944145,
+              "yes_rate": 0.8164383561643835
+            },
+            {
+              "band": "0.95 and above",
+              "markets": 5,
+              "mean_forecast": 0.9551330275899919,
+              "yes_rate": 1.0
+            }
+          ],
+          "raw_price": [
+            {
+              "band": "0 to 0.05",
+              "markets": 0,
+              "mean_forecast": null,
+              "yes_rate": null
+            },
+            {
+              "band": "0.05 to 0.1",
+              "markets": 399,
+              "mean_forecast": 0.06772920012215129,
+              "yes_rate": 0.06265664160401002
+            },
+            {
+              "band": "0.1 to 0.2",
+              "markets": 530,
+              "mean_forecast": 0.14108107024900962,
+              "yes_rate": 0.16981132075471697
+            },
+            {
+              "band": "0.2 to 0.3",
+              "markets": 369,
+              "mean_forecast": 0.24096476891255367,
+              "yes_rate": 0.25474254742547425
+            },
+            {
+              "band": "0.3 to 0.5",
+              "markets": 432,
+              "mean_forecast": 0.3890903568785285,
+              "yes_rate": 0.33564814814814814
+            },
+            {
+              "band": "0.5 to 0.7",
+              "markets": 321,
+              "mean_forecast": 0.588588751413489,
+              "yes_rate": 0.5358255451713395
+            },
+            {
+              "band": "0.7 to 0.95",
+              "markets": 375,
+              "mean_forecast": 0.828277331635288,
+              "yes_rate": 0.8133333333333334
+            },
+            {
+              "band": "0.95 and above",
+              "markets": 0,
+              "mean_forecast": null,
+              "yes_rate": null
+            }
+          ]
+        },
+        "frozen_minus_price_only_correction": {
+          "low": -0.0014417970502052263,
+          "high": 0.001972872668943461,
+          "point": 0.00022204830820721222,
+          "verdict": "cannot be told apart"
+        }
+      }
+    }
+  },
+  "validation": {
+    "events": 1213,
+    "slices": {
+      "all": {
+        "markets": 7374,
+        "events": 1213,
+        "yes_rate": 0.16775155953349608,
+        "scores": {
+          "raw_price": {
+            "log_loss": 0.15310823846758975,
+            "brier": 0.04651736674874796
+          },
+          "price_only_correction": {
+            "log_loss": 0.15341683955053448,
+            "brier": 0.04660114720384601
+          },
+          "base_rate": {
+            "log_loss": 0.4568694596223534,
+            "brier": 0.1410301319453314
+          },
+          "frozen_model": {
+            "log_loss": 0.1533170241754834,
+            "brier": 0.046630698014092496
+          }
+        },
+        "wobble": {
+          "raw_price": {
+            "log_loss": {
+              "low": 0.14261836512099904,
+              "high": 0.16507178586373783
+            },
+            "brier": {
+              "low": 0.04297960649875674,
+              "high": 0.05056899711808525
+            }
+          },
+          "price_only_correction": {
+            "log_loss": {
+              "low": 0.14279642981895377,
+              "high": 0.16558555638031042
+            },
+            "brier": {
+              "low": 0.042997854541373955,
+              "high": 0.05068956087717225
+            }
+          },
+          "base_rate": {
+            "log_loss": {
+              "low": 0.4388290132514171,
+              "high": 0.4727949522858677
+            },
+            "brier": {
+              "low": 0.13317303063861835,
+              "high": 0.1479661138298001
+            }
+          },
+          "frozen_model": {
+            "log_loss": {
+              "low": 0.1429630173966662,
+              "high": 0.16501176415690433
+            },
+            "brier": {
+              "low": 0.04318004249255581,
+              "high": 0.05063610838401185
+            }
+          }
+        },
+        "difference_vs_raw_price": {
+          "price_only_correction": {
+            "log_loss": {
+              "low": 2.3033200789988878e-05,
+              "high": 0.0006531669196498932,
+              "point": 0.0003086010829447261,
+              "verdict": "worse"
+            },
+            "brier": {
+              "low": -1.41520599911852e-05,
+              "high": 0.0001840424204476002,
+              "point": 8.378045509805504e-05,
+              "verdict": "cannot be told apart"
+            }
+          },
+          "base_rate": {
+            "log_loss": {
+              "low": 0.28507907221513085,
+              "high": 0.32159869074633884,
+              "point": 0.30376122115476367,
+              "verdict": "worse"
+            },
+            "brier": {
+              "low": 0.08707921554780901,
+              "high": 0.1015213190073177,
+              "point": 0.09451276519658344,
+              "verdict": "worse"
+            }
+          },
+          "frozen_model": {
+            "log_loss": {
+              "low": -0.00028246758946798983,
+              "high": 0.0008016437992488368,
+              "point": 0.00020878570789364947,
+              "verdict": "cannot be told apart"
+            },
+            "brier": {
+              "low": -5.239915292480219e-05,
+              "high": 0.0002866673361619938,
+              "point": 0.00011333126534453924,
+              "verdict": "cannot be told apart"
+            }
+          }
+        },
+        "calibration": {
+          "frozen_model": [
+            {
+              "band": "0 to 0.05",
+              "markets": 4935,
+              "mean_forecast": 0.006008106843335817,
+              "yes_rate": 0.006281661600810537
+            },
+            {
+              "band": "0.05 to 0.1",
+              "markets": 395,
+              "mean_forecast": 0.07069564810504889,
+              "yes_rate": 0.07848101265822785
+            },
+            {
+              "band": "0.1 to 0.2",
+              "markets": 424,
+              "mean_forecast": 0.14458980294206092,
+              "yes_rate": 0.14858490566037735
+            },
+            {
+              "band": "0.2 to 0.3",
+              "markets": 211,
+              "mean_forecast": 0.24592666954389159,
+              "yes_rate": 0.27014218009478674
+            },
+            {
+              "band": "0.3 to 0.5",
+              "markets": 362,
+              "mean_forecast": 0.3927953247370417,
+              "yes_rate": 0.43922651933701656
+            },
+            {
+              "band": "0.5 to 0.7",
+              "markets": 224,
+              "mean_forecast": 0.5901836123272844,
+              "yes_rate": 0.5803571428571429
+            },
+            {
+              "band": "0.7 to 0.95",
+              "markets": 326,
+              "mean_forecast": 0.8362633746158042,
+              "yes_rate": 0.8619631901840491
+            },
+            {
+              "band": "0.95 and above",
+              "markets": 497,
+              "mean_forecast": 0.9877001560972685,
+              "yes_rate": 0.9758551307847082
+            }
+          ],
+          "raw_price": [
+            {
+              "band": "0 to 0.05",
+              "markets": 4899,
+              "mean_forecast": 0.005910389220603149,
+              "yes_rate": 0.005919575423555827
+            },
+            {
+              "band": "0.05 to 0.1",
+              "markets": 384,
+              "mean_forecast": 0.06840101534504285,
+              "yes_rate": 0.07291666666666667
+            },
+            {
+              "band": "0.1 to 0.2",
+              "markets": 441,
+              "mean_forecast": 0.14077773696942877,
+              "yes_rate": 0.13151927437641722
+            },
+            {
+              "band": "0.2 to 0.3",
+              "markets": 237,
+              "mean_forecast": 0.2430379741405603,
+              "yes_rate": 0.27848101265822783
+            },
+            {
+              "band": "0.3 to 0.5",
+              "markets": 349,
+              "mean_forecast": 0.3910057267364923,
+              "yes_rate": 0.4355300859598854
+            },
+            {
+              "band": "0.5 to 0.7",
+              "markets": 236,
+              "mean_forecast": 0.5844957673334218,
+              "yes_rate": 0.5550847457627118
+            },
+            {
+              "band": "0.7 to 0.95",
+              "markets": 328,
+              "mean_forecast": 0.8315213465193165,
+              "yes_rate": 0.8719512195121951
+            },
+            {
+              "band": "0.95 and above",
+              "markets": 500,
+              "mean_forecast": 0.9878919811968212,
+              "yes_rate": 0.974
+            }
+          ]
+        },
+        "frozen_minus_price_only_correction": {
+          "low": -0.000706477969526409,
+          "high": 0.0006180314570517581,
+          "point": -9.981537505107663e-05,
+          "verdict": "cannot be told apart"
+        }
+      },
+      "contested": {
+        "markets": 1975,
+        "events": 894,
+        "yes_rate": 0.3650632911392405,
+        "scores": {
+          "raw_price": {
+            "log_loss": 0.47107676973502055,
+            "brier": 0.15302683923194332
+          },
+          "price_only_correction": {
+            "log_loss": 0.4718017270786072,
+            "brier": 0.15332227698307793
+          },
+          "base_rate": {
+            "log_loss": 0.7237803287683511,
+            "brier": 0.2572770193905034
+          },
+          "frozen_model": {
+            "log_loss": 0.4722416039805505,
+            "brier": 0.1534734514119697
+          }
+        },
+        "wobble": {
+          "raw_price": {
+            "log_loss": {
+              "low": 0.44438712395108726,
+              "high": 0.49611136484166685
+            },
+            "brier": {
+              "low": 0.14263360190071528,
+              "high": 0.16292165150245097
+            }
+          },
+          "price_only_correction": {
+            "log_loss": {
+              "low": 0.44439120345956756,
+              "high": 0.4975956697558656
+            },
+            "brier": {
+              "low": 0.1427288375696199,
+              "high": 0.16334174361587878
+            }
+          },
+          "base_rate": {
+            "log_loss": {
+              "low": 0.6943266356155078,
+              "high": 0.7611982824373505
+            },
+            "brier": {
+              "low": 0.2444491410664088,
+              "high": 0.273573548125006
+            }
+          },
+          "frozen_model": {
+            "log_loss": {
+              "low": 0.44531706361098666,
+              "high": 0.49687499029359705
+            },
+            "brier": {
+              "low": 0.14259849967100663,
+              "high": 0.16345088324930315
+            }
+          }
+        },
+        "difference_vs_raw_price": {
+          "price_only_correction": {
+            "log_loss": {
+              "low": -0.00029978909237669273,
+              "high": 0.001815716913344939,
+              "point": 0.0007249573435866297,
+              "verdict": "cannot be told apart"
+            },
+            "brier": {
+              "low": -7.364215663558937e-05,
+              "high": 0.0006551375335408697,
+              "point": 0.00029543775113460846,
+              "verdict": "cannot be told apart"
+            }
+          },
+          "base_rate": {
+            "log_loss": {
+              "low": 0.22041508364589346,
+              "high": 0.2830345205906423,
+              "point": 0.2527035590333305,
+              "verdict": "worse"
+            },
+            "brier": {
+              "low": 0.09078006592439261,
+              "high": 0.11681225939929621,
+              "point": 0.10425018015856008,
+              "verdict": "worse"
+            }
+          },
+          "frozen_model": {
+            "log_loss": {
+              "low": -0.0004902124980389112,
+              "high": 0.0030497188403486863,
+              "point": 0.0011648342455299332,
+              "verdict": "cannot be told apart"
+            },
+            "brier": {
+              "low": -0.0001758786471336718,
+              "high": 0.0011265390573920015,
+              "point": 0.0004466121800263678,
+              "verdict": "cannot be told apart"
+            }
+          }
+        },
+        "calibration": {
+          "frozen_model": [
+            {
+              "band": "0 to 0.05",
+              "markets": 56,
+              "mean_forecast": 0.045804433508111954,
+              "yes_rate": 0.07142857142857142
+            },
+            {
+              "band": "0.05 to 0.1",
+              "markets": 375,
+              "mean_forecast": 0.07155340416529965,
+              "yes_rate": 0.07733333333333334
+            },
+            {
+              "band": "0.1 to 0.2",
+              "markets": 424,
+              "mean_forecast": 0.14458980294206092,
+              "yes_rate": 0.14858490566037735
+            },
+            {
+              "band": "0.2 to 0.3",
+              "markets": 211,
+              "mean_forecast": 0.24592666954389159,
+              "yes_rate": 0.27014218009478674
+            },
+            {
+              "band": "0.3 to 0.5",
+              "markets": 362,
+              "mean_forecast": 0.3927953247370417,
+              "yes_rate": 0.43922651933701656
+            },
+            {
+              "band": "0.5 to 0.7",
+              "markets": 224,
+              "mean_forecast": 0.5901836123272844,
+              "yes_rate": 0.5803571428571429
+            },
+            {
+              "band": "0.7 to 0.95",
+              "markets": 317,
+              "mean_forecast": 0.8331242169037584,
+              "yes_rate": 0.861198738170347
+            },
+            {
+              "band": "0.95 and above",
+              "markets": 6,
+              "mean_forecast": 0.9547295797050737,
+              "yes_rate": 1.0
+            }
+          ],
+          "raw_price": [
+            {
+              "band": "0 to 0.05",
+              "markets": 0,
+              "mean_forecast": null,
+              "yes_rate": null
+            },
+            {
+              "band": "0.05 to 0.1",
+              "markets": 384,
+              "mean_forecast": 0.06840101534504285,
+              "yes_rate": 0.07291666666666667
+            },
+            {
+              "band": "0.1 to 0.2",
+              "markets": 441,
+              "mean_forecast": 0.14077773696942877,
+              "yes_rate": 0.13151927437641722
+            },
+            {
+              "band": "0.2 to 0.3",
+              "markets": 237,
+              "mean_forecast": 0.2430379741405603,
+              "yes_rate": 0.27848101265822783
+            },
+            {
+              "band": "0.3 to 0.5",
+              "markets": 349,
+              "mean_forecast": 0.3910057267364923,
+              "yes_rate": 0.4355300859598854
+            },
+            {
+              "band": "0.5 to 0.7",
+              "markets": 236,
+              "mean_forecast": 0.5844957673334218,
+              "yes_rate": 0.5550847457627118
+            },
+            {
+              "band": "0.7 to 0.95",
+              "markets": 328,
+              "mean_forecast": 0.8315213465193165,
+              "yes_rate": 0.8719512195121951
+            },
+            {
+              "band": "0.95 and above",
+              "markets": 0,
+              "mean_forecast": null,
+              "yes_rate": null
+            }
+          ]
+        },
+        "frozen_minus_price_only_correction": {
+          "low": -0.0015492923343013109,
+          "high": 0.0029947468095715022,
+          "point": 0.00043987690194330353,
+          "verdict": "cannot be told apart"
+        }
+      }
+    }
+  },
+  "window_check": {
+    "train": {
+      "markets": 23897,
+      "t_first": "2023-02-23T00:00:00+00:00",
+      "t_last": "2025-12-22T00:00:00+00:00",
+      "days_t_to_close": {
+        "p50": 3.391585648148148,
+        "p90": 63.834618055555886,
+        "p99": 212.19697870370373
+      },
+      "share_closing_within_1_day": 0.39892036657321,
+      "yes_rate": 0.20542327488806125,
+      "share_contested": 0.4455370967066996,
+      "mean_last_close": 0.20938789007767636,
+      "category_share": {
+        "Crypto": 0.3496254760011717,
+        "Politics": 0.26162279784073317,
+        "Sports": 0.1477172866887057,
+        "Culture": 0.12679415826254342,
+        "Tech": 0.05431644139431728,
+        "Finance": 0.0519730510105871,
+        "Weather": 0.007950788801941666
+      }
+    },
+    "validation": {
+      "markets": 7374,
+      "t_first": "2025-12-23T00:00:00+00:00",
+      "t_last": "2026-02-08T00:00:00+00:00",
+      "days_t_to_close": {
+        "p50": 0.8642708333333333,
+        "p90": 8.708212962962959,
+        "p99": 29.82276689814814
+      },
+      "share_closing_within_1_day": 0.6613778139408734,
+      "yes_rate": 0.16775155953349608,
+      "share_contested": 0.26783292649850826,
+      "mean_last_close": 0.16490248990202494,
+      "category_share": {
+        "Crypto": 0.5345809601301872,
+        "Culture": 0.16042853268239762,
+        "Finance": 0.12842419311093028,
+        "Politics": 0.09343639815568212,
+        "Sports": 0.05288852725793328,
+        "Tech": 0.024410089503661515,
+        "Weather": 0.0058312991592080286
+      }
+    },
+    "test": {
+      "markets": 8991,
+      "t_first": "2026-02-09T00:00:00+00:00",
+      "t_last": "2026-03-30T00:00:00+00:00",
+      "days_t_to_close": {
+        "p50": 0.8641087962962963,
+        "p90": 7.010243055555556,
+        "p99": 26.375394675926056
+      },
+      "share_closing_within_1_day": 0.6250695139584028,
+      "yes_rate": 0.18184851518184852,
+      "share_contested": 0.26982538093649205,
+      "mean_last_close": 0.18605091886592895,
+      "category_share": {
+        "Crypto": 0.44689133578022466,
+        "Politics": 0.1680569458347236,
+        "Culture": 0.1452563674785897,
+        "Sports": 0.11878545211878545,
+        "Finance": 0.09020131242353464,
+        "Tech": 0.021577132688243798,
+        "Weather": 0.009231453675898121
+      }
+    }
+  },
+  "rules": {
+    "headline_slice": "contested",
+    "readings": {
+      "better": "Better than the market price in this test window. One window only.",
+      "cannot be told apart": "No measurable difference from the market price in this test window.",
+      "worse": "Worse than the market price in this test window."
+    }
+  },
+  "notes": [
+    "The test split was opened once, by this run. The frozen model was fitted on train only and nothing was retuned.",
+    "Only the frozen model and the three baselines are scored on test. The other ladder models are not: that would be choosing after seeing test.",
+    "The wobble resamples whole events inside the test split. It covers sampling noise, not the shift between periods.",
+    "The test window is one stretch of weeks. Markets still open when the data ends are absent, so test leans towards markets that close quickly (see the window check)."
+  ]
+}
