@@ -38,11 +38,11 @@ def test_no_trading_or_money_claims_outside_the_no_claim_sentences():
         assert phrase not in low, phrase
 
 
-def test_readme_status_is_stage_10():
+def test_readme_status_is_complete():
     status = next(line for line in README.split("\n") if line.startswith("**Status:"))
-    assert status.startswith("**Status: Stage 10.")
-    assert "one-time test has been run" in status and "Nothing was retuned or refitted afterwards" in status
-    assert "Stage 9" not in status and "no final results to report" not in README
+    assert status.startswith("**Status: complete.")
+    assert "then the test split was opened once, on 25 Nov 2026" in status and "Nothing was retuned or refitted afterwards" in status
+    assert "Stage 9" not in status and "Stage 10" not in status and "no final results to report" not in README
 
 
 def test_every_script_is_documented():
@@ -77,7 +77,7 @@ def test_decision_time_in_the_text_matches_the_config():
 
 def test_the_sections_are_there_in_order():
     heads = [line for line in README.split("\n") if line.startswith("## ")]
-    wanted = ["## The question", "## Result in short", "## Data", "## How to run", "## Results",
+    wanted = ["## The question", "## Result in short", "## Write-ups", "## Data", "## How to run", "## Results",
               "## Numbers that could mislead", "## Limits"]
     assert heads == wanted
 
