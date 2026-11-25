@@ -225,6 +225,19 @@ ablation:
   # If the frozen all_columns score is not reproduced to this many log-loss units, the run stops.
   reproduce_tolerance: 1.0e-7
 
+# Stage 9: the one-time test (src/final_test.py --confirm-open-test). The rules below were fixed with Jeeps on 25 Nov 2026,
+# before the test split was opened. The test is opened once, with a lock file (models.test_lock_file); nothing is retuned afterwards.
+final_test:
+  expected_test_markets: 8991     # Stage 3 (final test size after events are kept whole). The run stops if the split report says otherwise.
+  reproduce_tolerance: 1.0e-7     # the frozen model, refitted on train, must reproduce its validation score in frozen_choice.yaml to this
+  headline_slice: contested       # the headline is this slice (all-markets scores are flattered by near-decided markets); the other slice is shown beside it
+  window_percentiles: [50, 90, 99]  # of days from t to close, for the test-window (censoring) check
+  # What the headline says, by the verdict of the paired difference against the raw price (log loss, whole events re-drawn).
+  readings:
+    better: "Better than the market price in this test window. One window only."
+    cannot be told apart: "No measurable difference from the market price in this test window."
+    worse: "Worse than the market price in this test window."
+
 evaluation:
   outputs_folder: outputs
   # The wobble: re-draw the validation set this many times by resampling whole events, show the middle share of the results.

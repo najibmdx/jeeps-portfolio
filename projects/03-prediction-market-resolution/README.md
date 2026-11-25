@@ -2,7 +2,7 @@
 
 Learning project. No claim about trading use, returns or profit.
 
-**Status: Stage 8 (dataset built, split by time, checked for leakage and shift; three baselines and an untuned model ladder scored on validation; the ladder tuned lightly and one model chosen on validation; the chosen model checked with column groups left out). The chosen model is written to `frozen_choice.yaml` before the test split is opened. The test split has not been read and there are no final results to report.**
+**Status: Stage 9 (dataset built, split by time, checked for leakage and shift; three baselines and an untuned model ladder scored on validation; the ladder tuned lightly and one model chosen on validation; the chosen model checked with column groups left out; the one-time test step is built). The chosen model is written to `frozen_choice.yaml` before the test split is opened. The test split has not been read and there are no final results to report.**
 
 ## The question
 
@@ -37,5 +37,7 @@ On real data, download the four files into `data/` (about 310 MB, each checked a
 `python src/freeze.py` then writes `frozen_choice.yaml` (model, settings, seed, validation scores, margin over the runner-up, date) from that report. It holds no test number, it is committed before the test split is opened, and it refuses to overwrite an existing choice or to run after the test has been opened.
 
 `python src/ablate.py` asks which groups of columns the frozen model needs. It takes the model and settings from `frozen_choice.yaml` and refits it on train with some columns left out: the price path alone, the price path plus the activity columns, plus the category, plus the sibling count, everything except the sibling count, and everything. Nothing is retuned, so the rows differ only in their columns. Each row is compared with the price-only correction and with the others in pairs, on the same resampled validation sets, and the full row must reproduce the validation score written in `frozen_choice.yaml` or the run stops. It scores validation only, never reads the test file, and cannot change the frozen choice. The sibling count rises over time, so a gain from it could partly be the calendar.
+
+`python src/final_test.py --confirm-open-test` is the one-time test. Without the flag it only prints its plan and reads nothing. With it, the script first checks that `frozen_choice.yaml` is committed and unchanged, that the test split has the agreed 8,991 markets, and that the frozen model, refitted on train only, reproduces its validation score. Only then does it write a lock file, read the test split once, and score the frozen model against the market price, the price-only correction and the base rate, on all markets and on the contested slice, with the same resampled ranges as validation. The reading of the result is fixed in `config.yaml` before the run, and the validation numbers are printed beside it. Nothing is retuned afterwards, and a second run is refused.
 
 Tests: `python -m pytest -q`

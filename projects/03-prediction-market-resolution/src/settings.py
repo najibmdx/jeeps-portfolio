@@ -137,6 +137,7 @@ def validate_config(config: dict) -> dict:
         raise ValueError("models.log_odds_columns must be a list of features, each once")
     _validate_tuning(config)
     _validate_ablation(config)
+    _validate_final_test(config)
     _validate_leakage(config)
     return config
 
@@ -221,6 +222,28 @@ def _validate_ablation(config: dict) -> None:
     tol = a["reproduce_tolerance"]
     if not _is_number(tol) or not 0 < tol <= 0.001:
         raise ValueError("ablation.reproduce_tolerance must be a small number above 0 (at most 0.001)")
+
+
+FINAL_TEST_VERDICTS = ("better", "cannot be told apart", "worse")
+
+
+def _validate_final_test(config: dict) -> None:
+    """Stage 9: the size of the test split, the reproduction tolerance, the headline slice, the three agreed readings."""
+    f = config["final_test"]
+    n = f["expected_test_markets"]
+    if isinstance(n, bool) or not isinstance(n, int) or n <= 0:
+        raise ValueError("final_test.expected_test_markets must be a whole number above 0")
+    tol = f["reproduce_tolerance"]
+    if not _is_number(tol) or not 0 < tol <= 0.001:
+        raise ValueError("final_test.reproduce_tolerance must be a small number above 0 (at most 0.001)")
+    if f["headline_slice"] not in ("all", "contested"):
+        raise ValueError("final_test.headline_slice must be all or contested")
+    p = f["window_percentiles"]
+    if not isinstance(p, list) or not p or any(not _is_number(x) or not 0 < x < 100 for x in p) or p != sorted(set(p)):
+        raise ValueError("final_test.window_percentiles must be a list of different numbers above 0 and below 100, smallest first")
+    r = f["readings"]
+    if not isinstance(r, dict) or set(r) != set(FINAL_TEST_VERDICTS) or any(not isinstance(v, str) or not v.strip() for v in r.values()):
+        raise ValueError(f"final_test.readings must have exactly one non-empty sentence for each of {list(FINAL_TEST_VERDICTS)}")
 
 
 def _validate_leakage(config: dict) -> None:
