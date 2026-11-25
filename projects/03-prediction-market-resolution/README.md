@@ -2,7 +2,7 @@
 
 Learning project. No claim about trading use, returns or profit.
 
-**Status: Stage 10. The project is built end to end and the one-time test has been run. The dataset was built, split by time and checked for leakage and shift; three baselines and an untuned model ladder were scored on validation; the ladder was tuned lightly and one model was chosen on validation and written to `frozen_choice.yaml`; the chosen model was checked with column groups left out; then the test split was opened once. Nothing was retuned or refitted afterwards.**
+**Status: complete. The dataset was built, split by time and checked for leakage and shift; three baselines and an untuned model ladder were scored on validation; the ladder was tuned lightly and one model was chosen on validation and written to `frozen_choice.yaml`; the chosen model was checked with column groups left out; then the test split was opened once, on 25 Nov 2026. Nothing was retuned or refitted afterwards.**
 
 ## The question
 
@@ -11,6 +11,11 @@ Polymarket markets trade at a price that already works as a forecast. Given what
 ## Result in short
 
 On the test split the frozen model cannot be told apart from the market's own price, in the contested slice (the headline) and on all markets. A forecast that ignores the price (the train Yes rate for every market) is clearly worse. Validation gives the same reading. In plain words: in this test window, the extra columns added nothing measurable to what the price already says. The contested slice is the markets whose last price before the decision time was between 0.05 and 0.95. Every number is in Results below, and "Numbers that could mislead" says how far to trust them.
+
+## Write-ups
+
+- `model_note.md`: how the model was trained, evaluated, tuned and chosen, for a data scientist.
+- `learning_log.md`: what was learned.
 
 ## Data
 
